@@ -250,6 +250,7 @@ cypress/screenshots/
 /webpage/.env.frontend
 /webpage/.env
 .env.backend
+.env
 
 # Go Build Artifacts
 .bin/
