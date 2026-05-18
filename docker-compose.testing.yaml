@@ -1,0 +1,32 @@
+services:
+  mocked-database:
+    container_name: "mocked-database"
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "14330:1433"
+    environment:
+      SA_PASSWORD: "oPax9HFmjU4AVAqXEeA"
+      ACCEPT_EULA: "Y"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -Q 'SELECT 1' || exit 1",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    command: >
+      /bin/bash -c "(/opt/mssql/bin/sqlservr) & sleep 10; /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -C -Q 'CREATE DATABASE test' & wait"
+  migrate-tool:
+    image: "migrate/migrate"
+    volumes:
+      - "./migrations:/migrations"
+    command: >
+      -path=/migrations/
+      -database sqlserver://sa:oPax9HFmjU4AVAqXEeA@mocked-database:14330?database=test up
+    depends_on:
+      mocked-database:
+        condition: service_healthy
+    restart: "no"
