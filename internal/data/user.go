@@ -35,7 +35,7 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-INSERT INTO public.users (
+INSERT INTO User (
 	id, username, email, password, created_at, last_updated)
 VALUES (
 	DEFAULT, $1, $2, $3, $4, $5
@@ -90,7 +90,7 @@ func (m UserModel) GetAll(ctx context.Context) ([]*User, error) {
 
 	stmt := `
 SELECT id, username, email, password, created_at, last_updated
-FROM public.users
+FROM User
 ORDER BY id DESC;
 `
 
@@ -142,7 +142,7 @@ func (m UserModel) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 
 	stmt := `
 SELECT CAST(id AS CHAR(36)), username, email, password, created_at, last_updated
-FROM public.users
+FROM User
 WHERE id = $1;
 `
 
@@ -186,7 +186,7 @@ func (m UserModel) Delete(ctx context.Context, userID uuid.UUID) error {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-DELETE FROM public.users
+DELETE FROM User
 WHERE id = $1;
 `
 
