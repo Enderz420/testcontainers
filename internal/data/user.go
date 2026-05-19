@@ -8,17 +8,19 @@ import (
 	"strings"
 	"time"
 
+	"enderz.net/testcontainer-test/internal/apperrors"
 	"enderz.net/testcontainer-test/internal/logging"
 	"github.com/google/uuid"
+	mssql "github.com/microsoft/go-mssqldb"
 )
 
 type User struct {
-	ID          uuid.UUID `json:"id"`
-	Username    string    `json:"username"`
-	Email       string    `json:"email"`
-	Password    string    `json:"-"`
-	CreatedAt   time.Time `json:"created_at"`
-	LastUpdated time.Time `json:"last_updated"`
+	ID          mssql.UniqueIdentifier `json:"id"`
+	Username    string                 `json:"username"`
+	Email       string                 `json:"email"`
+	Password    string                 `json:"-"`
+	CreatedAt   time.Time              `json:"created_at"`
+	LastUpdated time.Time              `json:"last_updated"`
 }
 
 type UserModel struct {
@@ -38,7 +40,7 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 INSERT INTO User (
 	id, username, email, password, created_at, last_updated)
 VALUES (
-	DEFAULT, $1, $2, $3, $4, $5
+	DEFAULT, $1, $2, $3, GETUTCDATE(), GETUTCDATE()
 )
 RETURNING id, username, password, created_at, last_updated;
 `
@@ -46,7 +48,9 @@ RETURNING id, username, password, created_at, last_updated;
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
 	defer cancel()
 
-	us.ID = uuid.New()
+	newUUID := uuid.New()
+	us.ID = mssql.UniqueIdentifier(newUUID)
+
 	var result User
 
 	logger = logger.With(
@@ -172,7 +176,7 @@ WHERE id = $1;
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			logger.InfoContext(ctx, "no rows found")
-			return nil, ErrRecordNotFound
+			return nil, apperrors.ErrRecordNotFound
 		default:
 			logger.ErrorContext(ctx, "error scanning row", "error", err)
 			return nil, err
