@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"enderz.net/testcontainer-test/internal/apperrors"
 	"enderz.net/testcontainer-test/internal/logging"
+	"enderz.net/testcontainer-test/internal/models"
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
 )
@@ -176,7 +176,7 @@ WHERE id = $1;
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			logger.InfoContext(ctx, "no rows found")
-			return nil, apperrors.ErrRecordNotFound
+			return nil, models.ErrRecordNotFound
 		default:
 			logger.ErrorContext(ctx, "error scanning row", "error", err)
 			return nil, err

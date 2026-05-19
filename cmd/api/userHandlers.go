@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"enderz.net/testcontainer-test/internal/apperrors"
 	"enderz.net/testcontainer-test/internal/data"
 	"enderz.net/testcontainer-test/internal/logging"
+	"enderz.net/testcontainer-test/internal/models"
 	"enderz.net/testcontainer-test/internal/rest"
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
@@ -122,7 +122,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.models.Users.Get(ctx, id)
 	if err != nil {
 		switch {
-		case errors.Is(err, apperrors.ErrRecordNotFound):
+		case errors.Is(err, models.ErrRecordNotFound):
 			rest.NotFoundResponse(w, r)
 		default:
 			logger.ErrorContext(ctx, "unable to get user", "error", err)
@@ -160,7 +160,7 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 	err = app.models.Users.Delete(ctx, id)
 	if err != nil {
 		switch {
-		case errors.Is(err, apperrors.ErrRecordNotFound):
+		case errors.Is(err, models.ErrRecordNotFound):
 			rest.NotFoundResponse(w, r)
 		default:
 			logger.ErrorContext(ctx, "unable to delete user", "error", err)
