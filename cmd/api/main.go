@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"enderz.net/testcontainer-test/internal/config"
+	"enderz.net/testcontainer-test/internal/data"
 	"enderz.net/testcontainer-test/internal/database"
 	"enderz.net/testcontainer-test/internal/rest"
 	_ "github.com/microsoft/go-mssqldb"
@@ -16,6 +18,7 @@ import (
 type application struct {
 	config *config.Config
 	db     *sql.DB
+	models data.Models
 }
 
 func main() {
@@ -35,7 +38,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := &application{config: cfg, db: db}
+	dbTimeout := time.Duration(cfg.DB.Timeout) * time.Second
+	app := &application{
+		config: cfg,
+		db:     db,
+		models: data.NewModels(db, &dbTimeout),
+	}
 
 	srv := &http.Server{
 		Addr:    *addr,
@@ -50,5 +58,5 @@ func main() {
 }
 
 func (a *application) HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	rest.RespondWithJSON(w, r, "available", http.StatusOK)
+	rest.RespondWithJSON(w, r, http.StatusOK, "available", nil)
 }
