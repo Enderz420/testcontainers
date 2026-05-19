@@ -30,7 +30,7 @@ type CreateUserRequest struct {
 	Password string    `json:"password"`
 }
 
-func (app *application) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := logging.LoggerFromContext(ctx)
 
