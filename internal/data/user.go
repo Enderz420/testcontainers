@@ -87,7 +87,7 @@ RETURNING id, username, password, created_at, last_updated;
 	return &result, nil
 }
 
-func (m UserModel) GetAll(ctx context.Context) ([]*User, error) {
+func (m UserModel) SelectAll(ctx context.Context) ([]*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
@@ -139,7 +139,7 @@ ORDER BY id DESC;
 	return results, nil
 }
 
-func (m UserModel) Get(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
+func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `

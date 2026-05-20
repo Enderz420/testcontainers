@@ -90,7 +90,7 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger := logging.LoggerFromContext(ctx)
 
-	users, err := app.models.Users.GetAll(ctx)
+	users, err := app.models.Users.SelectAll(ctx)
 	if err != nil {
 		logger.ErrorContext(ctx, "unable to retrieve users", "error", err)
 		rest.ServerErrorResponse(w, r, err)
@@ -119,7 +119,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.models.Users.Get(ctx, mssql.UniqueIdentifier(id))
+	user, err := app.models.Users.SelectOne(ctx, mssql.UniqueIdentifier(id))
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
