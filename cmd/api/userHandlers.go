@@ -14,11 +14,11 @@ import (
 )
 
 type UserResponse struct {
-	ID          mssql.UniqueIdentifier `json:"id"`
+	ID          uuid.UUID			   `json:"id"`
 	Username    string                 `json:"username"`
 	Email       string                 `json:"email"`
 	CreatedAt   time.Time              `json:"created_at"`
-	LastUpdated time.Time              `json:"last_updated"`
+	UpdatedAt 	time.Time              `json:"updated_at"`
 }
 
 type UserListResponse struct {
@@ -26,7 +26,7 @@ type UserListResponse struct {
 }
 
 type CreateUserRequest struct {
-	ID       mssql.UniqueIdentifier `json:"id"`
+	ID       uuid.UUID				`json:"id"`
 	Username string                 `json:"username"`
 	Email    string                 `json:"email"`
 	Password string                 `json:"password"`
@@ -77,7 +77,7 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 		w,
 		http.StatusCreated,
 		CreateUserRequest{
-			ID:       result.ID,
+			ID:       uuid.UUID(result.ID),
 			Username: result.Username,
 			Email:    result.Email,
 		},
@@ -119,7 +119,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.models.Users.Get(ctx, id)
+	user, err := app.models.Users.Get(ctx, mssql.UniqueIdentifier(id))
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
@@ -137,11 +137,11 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		UserResponse{
-			ID:          user.ID,
+			ID:          uuid.UUID(user.ID),
 			Username:    user.Username,
 			Email:       user.Email,
 			CreatedAt:   user.CreatedAt,
-			LastUpdated: user.LastUpdated,
+			UpdatedAt: 	 user.UpdatedAt,
 		},
 		nil,
 	)
@@ -157,7 +157,7 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.models.Users.Delete(ctx, id)
+	err = app.models.Users.Delete(ctx, mssql.UniqueIdentifier(id))
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
