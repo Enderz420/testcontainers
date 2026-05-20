@@ -1,6 +1,6 @@
 services:
-  mocked-database:
-    container_name: "mocked-database"
+  database:
+    container_name: "database"
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "14330:1433"
@@ -22,11 +22,30 @@ services:
   migrate-tool:
     image: "migrate/migrate"
     volumes:
-      - "./migrations:/migrations"
+      - "./../migrations:/migrations"
     command: >
       -path=/migrations/
-      -database sqlserver://sa:oPax9HFmjU4AVAqXEeA@mocked-database:14330?database=test up
+      -database sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:14330?database=test up
     depends_on:
       mocked-database:
         condition: service_healthy
+    restart: "no"
+  backend:
+    build:
+      context: "./.."
+      dockerfile: ".//build/api.Dockerfile"
+    stop_signal: SIGINT
+    environment:
+      - TESTCONTAINERS_DB_DSN="sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:14330?database=test&TrustServerCertificate=true"
+      - TESTCONTAINERS_DB_MAXOPENCONNS=256
+      - TESTCONTAINERS_DB_MAXIDLECONNS=256
+      - TESTCONTAINERS_DB_MACIDLETIME="15m"
+      - TESTCONTAINERS_DB_TIMEOUT=30
+    depends_on:
+      database:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "14000:4000"
     restart: "no"

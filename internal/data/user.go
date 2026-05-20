@@ -20,7 +20,7 @@ type User struct {
 	Email       string                 `json:"email"`
 	Password    string                 `json:"-"`
 	CreatedAt   time.Time              `json:"created_at"`
-	LastUpdated time.Time              `json:"last_updated"`
+	UpdatedAt 	time.Time              `json:"updated_at"`
 }
 
 type UserModel struct {
@@ -38,7 +38,7 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 
 	stmt := `
 INSERT INTO User (
-	id, username, email, password, created_at, last_updated)
+	id, username, email, password, created_at, updated_at)
 VALUES (
 	DEFAULT, $1, $2, $3, GETUTCDATE(), GETUTCDATE()
 )
@@ -69,15 +69,13 @@ RETURNING id, username, password, created_at, last_updated;
 		us.Username,
 		us.Email,
 		us.Password,
-		time.Now(),
-		time.Now(),
 	).Scan(
 		&result.ID,
 		&result.Username,
 		&result.Email,
 		&result.Password,
 		&result.CreatedAt,
-		&result.LastUpdated,
+		&result.UpdatedAt,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "unique_violation") || strings.Contains(err.Error(), "23505") {
@@ -89,11 +87,11 @@ RETURNING id, username, password, created_at, last_updated;
 	return &result, nil
 }
 
-func (m UserModel) GetAll(ctx context.Context) ([]*User, error) {
+func (m UserModel) SelectAll(ctx context.Context) ([]*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-SELECT id, username, email, password, created_at, last_updated
+SELECT id, username, email, password, created_at, updated_at
 FROM User
 ORDER BY id DESC;
 `
@@ -125,7 +123,7 @@ ORDER BY id DESC;
 			&user.Username,
 			&user.Email,
 			&user.CreatedAt,
-			&user.LastUpdated,
+			&user.UpdatedAt,
 		); err != nil {
 			logger.ErrorContext(ctx, "error scanning row", "error", err)
 			return nil, err
@@ -141,11 +139,11 @@ ORDER BY id DESC;
 	return results, nil
 }
 
-func (m UserModel) Get(ctx context.Context, id uuid.UUID) (*User, error) {
+func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-SELECT CAST(id AS CHAR(36)), username, email, password, created_at, last_updated
+SELECT CAST(id AS CHAR(36)), username, email, password, created_at, updated_at
 FROM User
 WHERE id = $1;
 `
@@ -170,7 +168,7 @@ WHERE id = $1;
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,
-		&user.LastUpdated,
+		&user.UpdatedAt,
 	)
 	if err != nil {
 		switch {
@@ -186,7 +184,7 @@ WHERE id = $1;
 	return &user, nil
 }
 
-func (m UserModel) Delete(ctx context.Context, userID uuid.UUID) error {
+func (m UserModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
@@ -201,13 +199,13 @@ WHERE id = $1;
 		slog.Group(
 			"query",
 			slog.String("statement", stmt),
-			slog.String("id", userID.String()),
+			slog.String("id", id.String()),
 		),
 	)
 
 	logger.InfoContext(ctx, "performing query")
 
-	_, err := m.DB.ExecContext(ctx, stmt, userID)
+	_, err := m.DB.ExecContext(ctx, stmt, id)
 	if err != nil {
 		logger.ErrorContext(ctx, "error deleting user", "error", err)
 		return err
