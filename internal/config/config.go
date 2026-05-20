@@ -17,7 +17,7 @@ func LoadConfig() (*Config, error) {
 
 	viper.SetDefault(
 		"db.dsn",
-		"sqlserver://sa:oPax9HFmjU4AVAqXEeA@mocked-database:1433?database=test&TrustServerCertificate=true",
+		"sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:1433?database=test&TrustServerCertificate=true",
 	)
 	viper.SetDefault("db.maxOpenConns", 256)
 	viper.SetDefault("db.maxIdleConns", 256)
