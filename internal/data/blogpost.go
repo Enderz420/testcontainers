@@ -21,7 +21,7 @@ type Blogpost struct {
 	ID        mssql.UniqueIdentifier `json:"id"`
 	Title     string                 `json:"title"`
 	Content   string                 `json:"content"`
-	CreatedBy mssql.UniqueIdentifier `json:"created_by"`
+	CreatedBy string				 `json:"created_by"`
 	CreatedAt time.Time              `json:"created_at"`
 	UpdatedAt time.Time              `json:"updated_at"`
 }
@@ -29,9 +29,7 @@ type Blogpost struct {
 type BlogpostInput struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
-	CreatedBy uuid.UUID `json:"created_by"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedBy string 	`json:"created_by"`
 }
 
 func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpost, error) {
@@ -39,6 +37,7 @@ func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpo
 
 	const stmt string = `
 	INSERT INTO Blogpost (
+		id,
 		title,
 		content,
 		created_by,
@@ -51,7 +50,7 @@ func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpo
 		INSERTED.created_by,
 		INSERTED.created_at,
 		INSERTED.updated_at
-	VALUES ($1, $2, $3, GETDATE(), GETDATE())
+	VALUES (NEWID(), @Title, @Content, @Createdby, GETDATE(), GETDATE())
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -63,10 +62,9 @@ func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpo
 	row := m.DB.QueryRowContext(
 		ctx,
 		stmt,
-		input.Title,
-		input.Content,
-		input.CreatedBy,
-		input.UpdatedAt,
+		sql.Named("Title", input.Title),
+		sql.Named("Content", input.Content),
+		sql.Named("Createdby", input.CreatedBy),
 	)
 
 	err := row.Scan(
@@ -92,7 +90,7 @@ func (m BlogpostModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier)
 	const stmt string = `
 	SELECT id, title, content, created_by, created_at, updated_at
 	FROM Blogpost
-	WHERE id = $1
+	WHERE id = @p1
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -172,4 +170,35 @@ func (m BlogpostModel) SelectAll(ctx context.Context) ([]*Blogpost, *database.Me
 	logger.Info("query successful", slog.Any("metadata", metadata))
 
 	return results, &metadata, nil
+}
+
+func (m BlogpostModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error {
+	logger := logging.LoggerFromContext(ctx)
+
+	stmt := `
+	DELETE FROM Blogpost
+	WHERE id = @p1;
+	`	
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	logger = logger.With(
+		slog.Group(
+			"query",
+			slog.String("statement", stmt),
+			slog.String("id", id.String()),
+		),
+	)
+
+	logger.InfoContext(ctx, "performing query")
+
+	_, err := m.DB.ExecContext(ctx, stmt, id)
+	if err != nil {
+		logger.ErrorContext(ctx, "error deleting blogpost", "error", err)
+		return err
+	}
+
+	logger.Info("blogpost deleted successfully")
+	return nil
 }

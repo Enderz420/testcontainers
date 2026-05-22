@@ -1,9 +1,8 @@
 services:
   database:
-    container_name: "database"
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
-      - "14330:1433"
+      - "1433:1433"
     environment:
       SA_PASSWORD: "oPax9HFmjU4AVAqXEeA"
       ACCEPT_EULA: "Y"
@@ -11,23 +10,25 @@ services:
       test:
         [
           "CMD-SHELL",
-          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -Q 'SELECT 1' || exit 1",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -C -d test -Q 'SELECT 1' || exit 1",
         ]
       interval: 10s
       timeout: 3s
       retries: 10
-      start_period: 10s
+      start_period: 30s
     command: >
-      /bin/bash -c "(/opt/mssql/bin/sqlservr) & sleep 10; /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -C -Q 'CREATE DATABASE test' & wait"
-  migrate-tool:
+      /bin/bash -c "(/opt/mssql/bin/sqlservr) & sleep 10; /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'oPax9HFmjU4AVAqXEeA' -C -Q 'CREATE DATABASE test' & wait"
+  migrate:
     image: "migrate/migrate"
     volumes:
       - "./../migrations:/migrations"
-    command: >
-      -path=/migrations/
-      -database sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:14330?database=test up
+    command:
+      - "-path=/migrations/"
+      - "-database"
+      - "sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:1433?database=test&TrustServerCertificate=true"
+      - "up"
     depends_on:
-      mocked-database:
+      database:
         condition: service_healthy
     restart: "no"
   backend:
@@ -36,7 +37,7 @@ services:
       dockerfile: ".//build/api.Dockerfile"
     stop_signal: SIGINT
     environment:
-      - TESTCONTAINERS_DB_DSN="sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:14330?database=test&TrustServerCertificate=true"
+      - TESTCONTAINERS_DB_DSN=sqlserver://sa:oPax9HFmjU4AVAqXEeA@database:1433?database=test&TrustServerCertificate=true
       - TESTCONTAINERS_DB_MAXOPENCONNS=256
       - TESTCONTAINERS_DB_MAXIDLECONNS=256
       - TESTCONTAINERS_DB_MACIDLETIME="15m"
@@ -47,5 +48,5 @@ services:
       migrate:
         condition: service_completed_successfully
     ports:
-      - "14000:4000"
+      - "4000:4000"
     restart: "no"

@@ -61,6 +61,7 @@ func (a application) PostBlogpostHandler(w http.ResponseWriter, r *http.Request)
 	logger.Log(ctx, slog.LevelInfo, "request", slog.Any("blogpost", blogpost))
 
 	if err := rest.ReadJSON(r, &blogpost); err != nil {
+		logger.Error("failed to read JSON", "error", err)  
 		rest.BadRequestResponse(w, r, "unable to parse request body")
 		return
 	}
@@ -72,4 +73,23 @@ func (a application) PostBlogpostHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	rest.RespondWithJSON(w, r, http.StatusCreated, BlogpostResponse{Data: *result}, nil)
+}
+
+func (a application) DeleteBlogpostHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		rest.BadRequestResponse(w, r, "unable to parse id in path")
+		return
+	}
+
+	err = a.models.Blogpost.Delete(ctx, mssql.UniqueIdentifier(id))
+	if err != nil {
+		rest.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	rest.RespondWithJSON(w, r, http.StatusOK, nil, nil)
+	
 }
