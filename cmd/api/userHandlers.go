@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"enderz.net/testcontainer-test/internal/data"
+	"enderz.net/testcontainer-test/internal/database"
 	"enderz.net/testcontainer-test/internal/logging"
 	"enderz.net/testcontainer-test/internal/models"
 	"enderz.net/testcontainer-test/internal/rest"
@@ -14,29 +14,26 @@ import (
 )
 
 type UserResponse struct {
-	ID          uuid.UUID			   `json:"id"`
-	Username    string                 `json:"username"`
-	Email       string                 `json:"email"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt 	time.Time              `json:"updated_at"`
+	Data data.User `json:"data"`
 }
 
 type UserListResponse struct {
-	Users []*data.User `json:"users"`
+	Data     []*data.User       `json:"data"`
+	Metadata *database.Metadata `json:"metadata"`
 }
 
-type CreateUserRequest struct {
-	ID       uuid.UUID				`json:"id"`
-	Username string                 `json:"username"`
-	Email    string                 `json:"email"`
-	Password string                 `json:"password"`
+type PostUserRequest struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
 }
 
 func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := logging.LoggerFromContext(ctx)
 
-	var req CreateUserRequest
+	var req PostUserRequest
 	err := rest.ReadJSON(r, &req)
 	if err != nil {
 		logger.Error("failed to read JSON", "error", err)
@@ -76,10 +73,8 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 	rest.WriteJSON(
 		w,
 		http.StatusCreated,
-		CreateUserRequest{
-			ID:       uuid.UUID(result.ID),
-			Username: result.Username,
-			Email:    result.Email,
+		UserResponse{
+			Data: *result,
 		},
 		nil,
 	)
@@ -90,7 +85,7 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger := logging.LoggerFromContext(ctx)
 
-	users, err := app.models.Users.SelectAll(ctx)
+	result, metadata, err := app.models.Users.SelectAll(ctx)
 	if err != nil {
 		logger.ErrorContext(ctx, "unable to retrieve users", "error", err)
 		rest.ServerErrorResponse(w, r, err)
@@ -103,7 +98,8 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 		w,
 		http.StatusOK,
 		UserListResponse{
-			Users: users,
+			Data:     result,
+			Metadata: metadata,
 		},
 		nil,
 	)
@@ -137,11 +133,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		UserResponse{
-			ID:          uuid.UUID(user.ID),
-			Username:    user.Username,
-			Email:       user.Email,
-			CreatedAt:   user.CreatedAt,
-			UpdatedAt: 	 user.UpdatedAt,
+			Data: *user,
 		},
 		nil,
 	)
@@ -171,5 +163,5 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 
 	logger.InfoContext(ctx, "user deleted")
 
-	w.WriteHeader(http.StatusNoContent)
+	rest.RespondWithJSON(w, r, http.StatusNoContent, nil, nil)
 }

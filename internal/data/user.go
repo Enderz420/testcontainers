@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"enderz.net/testcontainer-test/internal/database"
 	"enderz.net/testcontainer-test/internal/logging"
 	"enderz.net/testcontainer-test/internal/models"
 	"github.com/google/uuid"
@@ -15,12 +16,12 @@ import (
 )
 
 type User struct {
-	ID          mssql.UniqueIdentifier `json:"id"`
-	Username    string                 `json:"username"`
-	Email       string                 `json:"email"`
-	Password    string                 `json:"-"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt 	time.Time              `json:"updated_at"`
+	ID        mssql.UniqueIdentifier `json:"id"`
+	Username  string                 `json:"username"`
+	Email     string                 `json:"email"`
+	Password  string                 `json:"-"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
 }
 
 type UserModel struct {
@@ -38,11 +39,19 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 
 	stmt := `
 INSERT INTO User (
-	id, username, email, password, created_at, updated_at)
+	username,
+	email,
+	password,
+	created_at,
+	updated_at)
+OUTPUT
+	id,
+	username,
+	created_at,
+	updated_at
 VALUES (
-	DEFAULT, $1, $2, $3, GETUTCDATE(), GETUTCDATE()
+	$1, $2, $3, GETDATE(), GETDATE()
 )
-RETURNING id, username, password, created_at, last_updated;
 `
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -87,7 +96,7 @@ RETURNING id, username, password, created_at, last_updated;
 	return &result, nil
 }
 
-func (m UserModel) SelectAll(ctx context.Context) ([]*User, error) {
+func (m UserModel) SelectAll(ctx context.Context) ([]*User, *database.Metadata, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
@@ -112,7 +121,7 @@ ORDER BY id DESC;
 
 	rows, err := m.DB.QueryContext(ctx, stmt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
@@ -126,17 +135,23 @@ ORDER BY id DESC;
 			&user.UpdatedAt,
 		); err != nil {
 			logger.ErrorContext(ctx, "error scanning row", "error", err)
-			return nil, err
+			return nil, nil, err
 		}
 		results = append(results, &user)
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.ErrorContext(ctx, "error iterating rows", "error", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return results, nil
+	metadata := database.NewMetadata(results)
+	if metadata.Length > 0 {
+		metadata.LastSeen = uuid.UUID(results[metadata.Length-1].ID)
+	}
+	logger.Info("query successful", slog.Any("metadata", metadata))
+
+	return results, &metadata, nil
 }
 
 func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
