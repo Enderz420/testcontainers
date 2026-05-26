@@ -32,6 +32,7 @@ export default defineConfig({
           name: "integrations",
           include: ["test/integrations/*.{test,spec}.ts"],
           environment: "node",
+          // globalSetup: ["./test/setup/global.ts"],
         },
       },
     ],
