@@ -1,10 +1,44 @@
+import { mockNuxtImport, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { debug } from "debug";
+import { readBody } from "h3";
 import {
   DockerComposeEnvironment,
   StartedDockerComposeEnvironment,
   Wait,
 } from "testcontainers";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+mockNuxtImport("useFetch", () => {
+  return async (url: string, options?: any) => {
+    const data = ref(null);
+    const error = ref(null);
+    const status = ref("idle");
+    try {
+      data.value = await $fetch(url, options);
+      status.value = "success";
+    } catch (e: any) {
+      error.value = e;
+      status.value = "error";
+    }
+    return { data, error, status };
+  };
+});
+
+registerEndpoint("/blogpost", {
+  method: "GET",
+  handler: () => $fetch("http://localhost:4000/api/v1/blogpost"),
+});
+
+registerEndpoint("/blogpost", {
+  method: "POST",
+  handler: async (event) => {
+    const body = await readBody(event);
+    return $fetch("http://localhost:4000/api/v1/blogpost", {
+      method: "POST",
+      body,
+    });
+  },
+});
 
 describe("test blogpost", async () => {
   //   const databaseString: string = "";
@@ -77,8 +111,6 @@ describe("test blogpost", async () => {
       content: "this is a test",
       created_by: "testuser",
     };
-
-    // TODO: Fix server routes in nuxt context
     const input = await createBlogpost(body);
 
     // const input = await $fetch<BlogpostResponse>(
@@ -104,6 +136,7 @@ describe("test blogpost", async () => {
     });
   });
 
+  // TODO: Fix server routes in nuxt context
   it("gets all blogposts", async () => {
     const body1: PostBlogpost = {
       title: "Test 1",
