@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    globalSetup: ["./test/setup/global.ts"],
     projects: [
       {
         test: {
@@ -26,6 +27,14 @@ export default defineConfig({
           environment: "nuxt",
         },
       }),
+      {
+        test: {
+          name: "integrations",
+          include: ["test/integrations/*.{test,spec}.ts"],
+          environment: "node",
+          // globalSetup: ["./test/setup/global.ts"],
+        },
+      },
     ],
   },
 });

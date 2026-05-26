@@ -23,10 +23,8 @@ type UserListResponse struct {
 }
 
 type PostUserRequest struct {
-	ID       uuid.UUID `json:"id"`
 	Username string    `json:"username"`
 	Email    string    `json:"email"`
-	Password string    `json:"password"`
 }
 
 func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,21 +35,13 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 	err := rest.ReadJSON(r, &req)
 	if err != nil {
 		logger.Error("failed to read JSON", "error", err)
-		rest.BadRequestResponse(w, r, "unable  to decode data from request")
-		return
-	}
-
-	hashedPassword, err := rest.HashPassword(req.Password)
-	if err != nil {
-		logger.ErrorContext(ctx, "unable to hash password", "error", err)
-		rest.ServerErrorResponse(w, r, err)
+		rest.BadRequestResponse(w, r, "unable to decode data from request")
 		return
 	}
 
 	user := &data.User{
 		Username: req.Username,
 		Email:    req.Email,
-		Password: hashedPassword,
 	}
 
 	result, err := app.models.Users.Insert(ctx, user)
@@ -70,8 +60,9 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger.InfoContext(ctx, "user created")
 
-	rest.WriteJSON(
+	rest.RespondWithJSON(
 		w,
+		r,
 		http.StatusCreated,
 		UserResponse{
 			Data: *result,
@@ -94,8 +85,9 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger.InfoContext(ctx, "returning users")
 
-	rest.WriteJSON(
+	rest.RespondWithJSON(
 		w,
+		r,
 		http.StatusOK,
 		UserListResponse{
 			Data:     result,
@@ -129,8 +121,9 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.InfoContext(ctx, "returning user")
 
-	rest.WriteJSON(
+	rest.RespondWithJSON(
 		w,
+		r,
 		http.StatusOK,
 		UserResponse{
 			Data: *user,

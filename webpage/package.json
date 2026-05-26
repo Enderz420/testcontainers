@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "test": "vitest --config ./vitest.config.ts run",
+    "test:int": "vitest --config ./vitest.config.ts --project integrations run",
+    "test:e2e": "vitest --config ./vitest.config.ts --project e2e run",
+    "test:nuxt": "vitest --config ./vitest.config.ts --project nuxt run",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
