@@ -2,7 +2,6 @@ import { defineVitestProject } from "@nuxt/test-utils/config";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  nuxt: { rootDir: "." },
   test: {
     projects: [
       {
@@ -12,17 +11,18 @@ export default defineConfig({
           environment: "node",
         },
       },
-      {
-        test: {
-          name: "e2e",
-          include: ["test/e2e/*.{test,spec}.ts"],
-          environment: "node",
-        },
-      },
+
       await defineVitestProject({
         test: {
           name: "nuxt",
           include: ["test/nuxt/*.{test,spec}.ts"],
+          environment: "nuxt",
+        },
+      }),
+      await defineVitestProject({
+        test: {
+          name: "e2e",
+          include: ["test/e2e/*.{test,spec}.ts"],
           environment: "nuxt",
         },
       }),

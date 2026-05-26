@@ -17,11 +17,14 @@ export function useBlogpost() {
     body: PostBlogpost,
   ): Promise<BlogpostResponse> => {
     console.log("Inserting data");
-    const { data, error } = await useFetch<BlogpostResponse>("/blogpost", {
-      method: "POST",
-      body: body,
-      headers: { "Content-Type": "application/json" },
-    });
+    const { data, error } = await useFetch<BlogpostResponse>(
+      "http://localhost:3000/blogpost",
+      {
+        method: "POST",
+        body: body,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     console.log("error:", error.value);
     console.log("data:", data.value);
     if (error.value) throw error.value;

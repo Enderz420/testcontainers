@@ -8,4 +8,23 @@ export default defineNuxtConfig({
       url: "http://localhost:4000",
     },
   },
+  hooks: {
+    "pages:extend": (pages) => {
+      const filteredPages = pages
+        .filter((page) => {
+          if (page.file === undefined) return true;
+          if (page.file.endsWith(".ts")) return false;
+
+          return true;
+        })
+        .filter((page) => {
+          if (page.file === undefined) return true;
+          if (page.file.includes("/components/")) return false;
+
+          return true;
+        });
+      pages.length = 0;
+      pages.push(...filteredPages);
+    },
+  },
 });

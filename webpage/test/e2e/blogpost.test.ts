@@ -1,4 +1,3 @@
-import { registerEndpoint } from "@nuxt/test-utils/runtime";
 import { debug } from "debug";
 import {
   DockerComposeEnvironment,
@@ -80,16 +79,16 @@ describe("test blogpost", async () => {
     };
 
     // TODO: Fix server routes in nuxt context
-    // const input = await createBlogpost(body);
+    const input = await createBlogpost(body);
 
-    const input = await $fetch<BlogpostResponse>(
-      "http://localhost:4000/api/v1/blogpost",
-      {
-        method: "POST",
-        body: body,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    // const input = await $fetch<BlogpostResponse>(
+    //   "http://localhost:4000/api/v1/blogpost",
+    //   {
+    //     method: "POST",
+    //     body: body,
+    //     headers: { "Content-Type": "application/json" },
+    //   },
+    // );
 
     console.log(input);
 
