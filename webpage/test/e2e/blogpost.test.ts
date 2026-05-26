@@ -142,7 +142,6 @@ describe("test blogpost", async () => {
     });
   });
 
-  // TODO: Fix server routes in nuxt context
   it("gets all blogposts", async () => {
     const body1: PostBlogpost = {
       title: "Test 1",
@@ -161,14 +160,14 @@ describe("test blogpost", async () => {
       $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body2 }),
     ]);
 
-    // const response = await getAllBlogposts();
+    const response = await getAllBlogposts();
 
-    const response = await $fetch<BlogpostListResponse>(
-      "http://localhost:4000/api/v1/blogpost",
-      {
-        method: "GET",
-      },
-    );
+    // const response = await $fetch<BlogpostListResponse>(
+    //   "http://localhost:4000/api/v1/blogpost",
+    //   {
+    //     method: "GET",
+    //   },
+    // );
 
     console.log("Response: ", response);
 
