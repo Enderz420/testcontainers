@@ -1,3 +1,4 @@
+import { registerEndpoint } from "@nuxt/test-utils/runtime";
 import { debug } from "debug";
 import {
   DockerComposeEnvironment,
@@ -5,11 +6,6 @@ import {
   Wait,
 } from "testcontainers";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-// import {  setup, } from '@nuxt/test-utils/e2e'
-
-// await setup({
-//    server
-// })
 
 describe("test blogpost", async () => {
   //   const databaseString: string = "";
@@ -17,8 +13,11 @@ describe("test blogpost", async () => {
   //   let databaseClient: ConnectionPool;
 
   const baseUrl = "http://localhost:4000";
+
   let environment: StartedDockerComposeEnvironment;
+
   debug.enable("testcontainers*");
+
   const { getAllBlogposts, createBlogpost, deleteBlogpost } = useBlogpost();
 
   beforeAll(async () => {
@@ -31,10 +30,20 @@ describe("test blogpost", async () => {
         .withWaitStrategy("migrate", Wait.forOneShotStartup())
         .up();
 
-      const backendContainer = environment.getContainer("backend-1");
-      const stream = await backendContainer.logs();
-      stream.on("data", (chunk) => process.stdout.write(`[backend] ${chunk}`));
-      stream.on("err", (chunk) => process.stderr.write(`[backend] ${chunk}`));
+      // registerEndpoint("/blogpost", async (event) => {
+      //   const data = await readBody(event);
+      //   console.log("request ", data);
+
+      //   const response = await $fetch<BlogpostResponse>(
+      //     "http://localhost:4000/api/v1/blogpost",
+      //     {
+      //       method: "POST",
+      //       body: data,
+      //     },
+      //   );
+      //   console.log("returning");
+      //   return response;
+      // });
     } catch (error) {
       throw error;
     }
@@ -72,6 +81,7 @@ describe("test blogpost", async () => {
 
     // TODO: Fix server routes in nuxt context
     // const input = await createBlogpost(body);
+
     const input = await $fetch<BlogpostResponse>(
       "http://localhost:4000/api/v1/blogpost",
       {
@@ -87,14 +97,43 @@ describe("test blogpost", async () => {
 
     expect(input.data.title).toBe(body.title);
     expect(input.data.content).toBe(body.content);
-    expect(input.data.createdBy).toBe(body.created_by);
+    expect(input.data.created_by).toBe(body.created_by);
     console.log("test passed");
-    await deleteBlogpost(input.data.id);
+    console.log(input.data.id);
+    await $fetch(`http://localhost:4000/api/v1/blogpost/${input.data.id}`, {
+      method: "DELETE",
+    });
   });
 
-  // it("gets all blogposts", async () => {
-  //   const response = await getAllBlogposts();
-  //   expect(response.metadata.Length).toBe(2);
-  //   expect(response.data.length).toBe(2);
-  // });
+  it("gets all blogposts", async () => {
+    const body1: PostBlogpost = {
+      title: "Test 1",
+      content: "This is a test",
+      created_by: "TestUser",
+    };
+
+    const body2: PostBlogpost = {
+      title: "Test 2",
+      content: "This is another test",
+      created_by: "TestUser2",
+    };
+
+    await Promise.all([
+      $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body1 }),
+      $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body2 }),
+    ]);
+
+    // const response = await getAllBlogposts();
+
+    const response = await $fetch<BlogpostListResponse>(
+      "http://localhost:4000/api/v1/blogpost",
+      {
+        method: "GET",
+      },
+    );
+
+    console.log("Response: ", response);
+
+    expect(response.metadata.length).toBe(2);
+  });
 });
