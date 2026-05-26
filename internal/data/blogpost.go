@@ -90,7 +90,7 @@ func (m BlogpostModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier)
 	const stmt string = `
 	SELECT id, title, content, created_by, created_at, updated_at
 	FROM Blogpost
-	WHERE id = @p1
+	WHERE id = @ID
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -102,7 +102,7 @@ func (m BlogpostModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier)
 	row := m.DB.QueryRowContext(
 		ctx,
 		stmt,
-		id,
+		sql.Named("ID", id),
 	)
 
 	err := row.Scan(
@@ -177,7 +177,7 @@ func (m BlogpostModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) er
 
 	stmt := `
 	DELETE FROM Blogpost
-	WHERE id = @p1;
+	WHERE id = @ID;
 	`	
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -191,9 +191,9 @@ func (m BlogpostModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) er
 		),
 	)
 
-	logger.InfoContext(ctx, "performing query")
+	logger.InfoContext(ctx, "performing delete query")
 
-	_, err := m.DB.ExecContext(ctx, stmt, id)
+	_, err := m.DB.ExecContext(ctx, stmt, sql.Named("ID", id))
 	if err != nil {
 		logger.ErrorContext(ctx, "error deleting blogpost", "error", err)
 		return err

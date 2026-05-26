@@ -2,9 +2,9 @@ export type Blogpost = {
   id: string;
   title: string;
   content: string;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type BlogpostListResponse = {
@@ -18,8 +18,8 @@ export type BlogpostResponse = {
 };
 
 export type Metadata = {
-  LastSeen: string;
-  Length: number;
+  last_seen: string;
+  length: number;
 };
 
 export type PostBlogpost = {

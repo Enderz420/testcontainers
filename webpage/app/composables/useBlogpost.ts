@@ -1,8 +1,13 @@
 export function useBlogpost() {
   const getAllBlogposts = async (): Promise<BlogpostListResponse> => {
-    const { data } = await useFetch<BlogpostListResponse>("/blogpost", {
+    const { data, error } = await useFetch<BlogpostListResponse>("/blogpost", {
       method: "GET",
     });
+
+    console.log("error:", error.value);
+    console.log("data:", data.value);
+
+    if (error.value) throw error.value;
     if (!data.value) throw new Error("No data returned");
 
     return data.value;
@@ -15,6 +20,7 @@ export function useBlogpost() {
     const { data, error } = await useFetch<BlogpostResponse>("/blogpost", {
       method: "POST",
       body: body,
+      headers: { "Content-Type": "application/json" },
     });
     console.log("error:", error.value);
     console.log("data:", data.value);
@@ -24,13 +30,13 @@ export function useBlogpost() {
   };
 
   const deleteBlogpost = async (id: string): Promise<string> => {
-    const { status } = await useFetch(`/blogpost/${id}`, {
+    const { status, error } = await useFetch(`/blogpost/${id}`, {
       method: "DELETE",
     });
 
-    if (!status.value) {
-      throw new Error(status.value);
-    }
+    console.log("error:", error.value);
+    console.log("data:", status.value);
+    if (error.value) throw error.value;
 
     return status.value;
   };
