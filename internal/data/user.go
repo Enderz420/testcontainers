@@ -19,7 +19,6 @@ type User struct {
 	ID        mssql.UniqueIdentifier `json:"id"`
 	Username  string                 `json:"username"`
 	Email     string                 `json:"email"`
-	Password  string                 `json:"-"`
 	CreatedAt time.Time              `json:"created_at"`
 	UpdatedAt time.Time              `json:"updated_at"`
 }
@@ -38,19 +37,20 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-INSERT INTO User (
+INSERT INTO [User] (
+	id,
 	username,
 	email,
-	password,
 	created_at,
 	updated_at)
 OUTPUT
-	id,
-	username,
-	created_at,
-	updated_at
+	INSERTED.id,
+	INSERTED.username,
+	INSERTED.email,
+	INSERTED.created_at,
+	INSERTED.updated_at
 VALUES (
-	$1, $2, $3, GETDATE(), GETDATE()
+	NEWID(), @Username, @Email, GETDATE(), GETDATE()
 )
 `
 
@@ -75,14 +75,12 @@ VALUES (
 	err := m.DB.QueryRowContext(
 		ctx,
 		stmt,
-		us.Username,
-		us.Email,
-		us.Password,
+		sql.Named("Username", us.Username),
+		sql.Named("Email", us.Email),
 	).Scan(
 		&result.ID,
 		&result.Username,
 		&result.Email,
-		&result.Password,
 		&result.CreatedAt,
 		&result.UpdatedAt,
 	)
@@ -100,8 +98,8 @@ func (m UserModel) SelectAll(ctx context.Context) ([]*User, *database.Metadata, 
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-SELECT id, username, email, password, created_at, updated_at
-FROM User
+SELECT id, username, email, created_at, updated_at
+FROM [User]
 ORDER BY id DESC;
 `
 
@@ -158,9 +156,9 @@ func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*U
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-SELECT CAST(id AS CHAR(36)), username, email, password, created_at, updated_at
-FROM User
-WHERE id = $1;
+SELECT id, username, email, created_at, updated_at
+FROM [User]
+WHERE id = @ID;
 `
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -177,11 +175,10 @@ WHERE id = $1;
 	)
 
 	logger.InfoContext(ctx, "performing query")
-	err := m.DB.QueryRowContext(ctx, stmt, id).Scan(
+	err := m.DB.QueryRowContext(ctx, stmt, sql.Named("ID", id)).Scan(
 		&user.ID,
 		&user.Username,
 		&user.Email,
-		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -203,8 +200,8 @@ func (m UserModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error 
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-DELETE FROM User
-WHERE id = $1;
+DELETE FROM [User]
+WHERE id = @ID;
 `
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
@@ -220,7 +217,7 @@ WHERE id = $1;
 
 	logger.InfoContext(ctx, "performing query")
 
-	_, err := m.DB.ExecContext(ctx, stmt, id)
+	_, err := m.DB.ExecContext(ctx, stmt, sql.Named("ID", id))
 	if err != nil {
 		logger.ErrorContext(ctx, "error deleting user", "error", err)
 		return err
