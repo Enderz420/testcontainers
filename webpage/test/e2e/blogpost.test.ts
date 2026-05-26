@@ -7,6 +7,12 @@ import {
   Wait,
 } from "testcontainers";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { ref } from "vue";
+import { useBlogpost } from "../../app/composables/useBlogpost";
+import {
+  BlogpostListResponse,
+  PostBlogpost,
+} from "../../shared/types/blogpost";
 
 mockNuxtImport("useFetch", () => {
   return async (url: string, options?: any) => {
