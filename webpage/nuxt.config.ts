@@ -34,6 +34,7 @@ export default defineNuxtConfig({
       compilerOptions: {
         types: ["vitest/globals"],
       },
+      include: ["/vitest.shims.d.ts"],
     },
   },
 });

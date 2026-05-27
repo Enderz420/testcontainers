@@ -4,10 +4,11 @@ import {
   StartedDockerComposeEnvironment,
   Wait,
 } from "testcontainers";
+import { TestProject } from "vitest/node";
 
 let environment: StartedDockerComposeEnvironment;
 
-export async function setup() {
+export async function setup(module: TestProject) {
   debug.enable("testcontainers*");
 
   environment = await new DockerComposeEnvironment(
@@ -17,20 +18,10 @@ export async function setup() {
     .withWaitStrategy("migrate", Wait.forOneShotStartup())
     .up();
 
-  // Requires @nuxt/testing-utils/e2e
-  // createTestContext({
-  //   rootDir: fileURLToPath(new URL("../../", import.meta.url)),
-  //   server: true,
-  //   build: true,
-  //   runner: "vitest",
-  // });
-
-  // await loadFixture();
-  // await buildFixture();
-  // await startServer();
-  // exposeContextToEnv();
+  const port = environment.getContainer("backend").getMappedPort(4000);
+  module.provide("integrationsBaseUrl", `http://localhost:${port}`);
 }
 
 export async function teardown() {
-  await environment?.down({ removeVolumes: true });
+  environment?.down({ removeVolumes: true });
 }
