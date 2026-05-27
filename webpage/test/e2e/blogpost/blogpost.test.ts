@@ -38,131 +38,69 @@ registerEndpoint("/blogpost", {
   },
 });
 
-describe("test blogpost", async () => {
-  //   const databaseString: string = "";
+describe(
+  "test blogpost",
+  { tags: ["blogpost", "testcontainers"] },
+  async () => {
+    const baseUrl = "http://localhost:4000";
 
-  //   let databaseClient: ConnectionPool;
+    debug.enable("testcontainers*");
 
-  const baseUrl = "http://localhost:4000";
+    const { getAllBlogposts, createBlogpost, deleteBlogpost } = useBlogpost();
 
-  // let environment: StartedDockerComposeEnvironment;
+    it("should create a blogpost", async () => {
+      console.log("Starting test");
+      const body: PostBlogpost = {
+        title: "test",
+        content: "this is a test",
+        created_by: "testuser",
+      };
+      const input = await createBlogpost(body);
 
-  debug.enable("testcontainers*");
+      console.log(input);
 
-  const { getAllBlogposts, createBlogpost, deleteBlogpost } = useBlogpost();
+      console.log("aswserting");
 
-  // beforeAll(async () => {
-  //   console.log("Setting up");
-  // try {
-  //   environment = await new DockerComposeEnvironment(
-  //     "../",
-  //     "./deployment/docker-compose.testing.yaml",
-  //   )
-  //     .withWaitStrategy("migrate", Wait.forOneShotStartup())
-  //     .up();
-
-  // registerEndpoint("/blogpost", async (event) => {
-  //   const data = await readBody(event);
-  //   console.log("request ", data);
-
-  //   const response = await $fetch<BlogpostResponse>(
-  //     "http://localhost:4000/api/v1/blogpost",
-  //     {
-  //       method: "POST",
-  //       body: data,
-  //     },
-  //   );
-  //   console.log("returning");
-  //   return response;
-  // });
-  // } catch (error) {
-  //   throw error;
-  // }
-
-  // const body1: PostBlogpost = {
-  //   Title: "Test",
-  //   Content: "This is a test",
-  //   CreatedBy: "TestUser",
-  // };
-
-  // const body2: PostBlogpost = {
-  //   Title: "Test 2",
-  //   Content: "This is another test",
-  //   CreatedBy: "TestUser",
-  // };
-
-  // await Promise.all([
-  //   $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body1 }),
-  //   $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body2 }),
-  // ]);
-  // }, 120_000);
-
-  // afterAll(async () => {
-  //   console.log("Shutting down");
-  //   await environment?.down({ removeVolumes: true });
-  // }, 120_000);
-
-  it("should create a blogpost", async () => {
-    console.log("Starting test");
-    const body: PostBlogpost = {
-      title: "test",
-      content: "this is a test",
-      created_by: "testuser",
-    };
-    const input = await createBlogpost(body);
-
-    // const input = await $fetch<BlogpostResponse>(
-    //   "http://localhost:4000/api/v1/blogpost",
-    //   {
-    //     method: "POST",
-    //     body: body,
-    //     headers: { "Content-Type": "application/json" },
-    //   },
-    // );
-
-    console.log(input);
-
-    console.log("aswserting");
-
-    expect(input.data.title).toBe(body.title);
-    expect(input.data.content).toBe(body.content);
-    expect(input.data.created_by).toBe(body.created_by);
-    console.log("test passed");
-    console.log(input.data.id);
-    await $fetch(`http://localhost:4000/api/v1/blogpost/${input.data.id}`, {
-      method: "DELETE",
+      expect(input.data.title).toBe(body.title);
+      expect(input.data.content).toBe(body.content);
+      expect(input.data.created_by).toBe(body.created_by);
+      console.log("test passed");
+      console.log(input.data.id);
+      await $fetch(`http://localhost:4000/api/v1/blogpost/${input.data.id}`, {
+        method: "DELETE",
+      });
     });
-  });
 
-  it("gets all blogposts", async () => {
-    const body1: PostBlogpost = {
-      title: "Test 1",
-      content: "This is a test",
-      created_by: "TestUser",
-    };
+    it("gets all blogposts", async () => {
+      const body1: PostBlogpost = {
+        title: "Test 1",
+        content: "This is a test",
+        created_by: "TestUser",
+      };
 
-    const body2: PostBlogpost = {
-      title: "Test 2",
-      content: "This is another test",
-      created_by: "TestUser2",
-    };
+      const body2: PostBlogpost = {
+        title: "Test 2",
+        content: "This is another test",
+        created_by: "TestUser2",
+      };
 
-    await Promise.all([
-      $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body1 }),
-      $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body2 }),
-    ]);
+      await Promise.all([
+        $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body1 }),
+        $fetch(`${baseUrl}/api/v1/blogpost`, { method: "POST", body: body2 }),
+      ]);
 
-    const response = await getAllBlogposts();
+      const response = await getAllBlogposts();
 
-    // const response = await $fetch<BlogpostListResponse>(
-    //   "http://localhost:4000/api/v1/blogpost",
-    //   {
-    //     method: "GET",
-    //   },
-    // );
+      // const response = await $fetch<BlogpostListResponse>(
+      //   "http://localhost:4000/api/v1/blogpost",
+      //   {
+      //     method: "GET",
+      //   },
+      // );
 
-    console.log("Response: ", response);
+      console.log("Response: ", response);
 
-    expect(response.metadata.length).toBe(2);
-  });
-});
+      expect(response.metadata.length).toBe(2);
+    });
+  },
+);
