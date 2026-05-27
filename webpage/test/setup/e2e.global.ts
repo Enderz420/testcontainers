@@ -1,4 +1,3 @@
-import debug from "debug";
 import {
   DockerComposeEnvironment,
   StartedDockerComposeEnvironment,
@@ -9,7 +8,7 @@ import { TestProject } from "vitest/node";
 let environment: StartedDockerComposeEnvironment;
 
 export async function setup(module: TestProject) {
-  debug.enable("testcontainers*");
+  // debug.enable("testcontainers*");
 
   environment = await new DockerComposeEnvironment(
     "../",
@@ -23,5 +22,5 @@ export async function setup(module: TestProject) {
 }
 
 export async function teardown() {
-  environment?.down({ removeVolumes: true });
+  await environment?.down({ removeVolumes: true });
 }

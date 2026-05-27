@@ -41,6 +41,8 @@ export default defineConfig({
           include: ["test/e2e/**/*.{test,spec}.ts"],
           environment: "nuxt",
           globalSetup: ["./test/setup/e2e.global.ts"],
+          hookTimeout: 120_000,
+          testTimeout: 15_000,
         },
       }),
       {
@@ -49,6 +51,8 @@ export default defineConfig({
           include: ["test/integrations/**/*.{test,spec}.ts"],
           environment: "node",
           globalSetup: ["./test/setup/integrations.global.ts"],
+          hookTimeout: 120_000,
+          testTimeout: 15_000,
         },
       },
     ],

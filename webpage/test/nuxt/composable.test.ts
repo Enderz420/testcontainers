@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { increment } from "~/composables/useIncrement";
+import { increment } from "../../app/composables/useIncrement";
 
 describe("increment", () => {
   test("it increments", () => {

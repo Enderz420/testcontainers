@@ -1,11 +1,7 @@
 import { $fetch, setup } from "@nuxt/test-utils/e2e";
-import { debug } from "debug";
 import { fileURLToPath } from "node:url";
-import { describe, it } from "vitest";
-import { PostUser } from "../../shared/types/user";
-
-debug.enable("testcontainers*");
-console.log("context:", process.env.NUXT_TEST_CONTEXT);
+import { describe, expectTypeOf, it } from "vitest";
+import { PostUser, User, UserResponse } from "../../shared/types/user";
 
 await setup({
   rootDir: fileURLToPath(new URL("../../", import.meta.url)),
@@ -19,11 +15,13 @@ describe("user test", async () => {
       username: "tester",
       email: "test@test.com",
     };
-    const input = await $fetch("/user", {
+    const input = await $fetch<UserResponse>("/user", {
       method: "POST",
       body: body,
     });
 
     console.log(input);
+
+    expectTypeOf(input.data).toMatchObjectType<User>();
   });
 });

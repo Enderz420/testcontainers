@@ -24,5 +24,5 @@ export async function setup(module: TestProject) {
 }
 
 export async function teardown() {
-  environment?.down({ removeVolumes: true });
+  await environment?.down({ removeVolumes: true });
 }

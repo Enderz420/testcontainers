@@ -2,11 +2,11 @@
 const props = defineProps<Blogpost>();
 </script>
 <template>
-  <div>
-    <span>{{ props.title }}</span>
-    <p>{{ props.content }}</p>
+  <div class="p-8 bg-purple-700/40 text-white">
+    <span class="text-2xl">{{ props.title }}</span>
+    <p class="text-xl">{{ props.content }}</p>
 
-    <div>
+    <div class="mx-auto p-5">
       <p>Metadata</p>
       <p>Created at {{ props.created_at }}</p>
       <p>Created by {{ props.created_by }}</p>

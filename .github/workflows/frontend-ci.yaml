@@ -6,7 +6,7 @@ on:
     branches: ["main"]
 
 jobs:
-  unit-test-frontend:
+  test-nuxt-context:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     defaults:
@@ -27,4 +27,48 @@ jobs:
         run: npm ci
 
       - name: Run Unit Tests
-        run: npm test
+        run: npm run test:unit
+  test-integrations-context:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webpage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: webpage/package-lock.json
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Unit Tests
+        run: npm run test:int
+  test-e2e-context:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webpage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: webpage/package-lock.json
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Unit Tests
+        run: npm run test:e2e
