@@ -14,11 +14,11 @@ import (
 )
 
 type UserResponse struct {
-	Data data.User `json:"data"`
+	Data data.User `json:"results"`
 }
 
 type UserListResponse struct {
-	Data     []*data.User       `json:"data"`
+	Data     []*data.User       `json:"results"`
 	Metadata *database.Metadata `json:"metadata"`
 }
 

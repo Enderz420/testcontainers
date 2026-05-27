@@ -61,12 +61,12 @@ describe(
 
       console.log("aswserting");
 
-      expect(input.data.title).toBe(body.title);
-      expect(input.data.content).toBe(body.content);
-      expect(input.data.created_by).toBe(body.created_by);
+      expect(input.results.title).toBe(body.title);
+      expect(input.results.content).toBe(body.content);
+      expect(input.results.created_by).toBe(body.created_by);
       console.log("test passed");
-      console.log(input.data.id);
-      await $fetch(`${baseUrl}/api/v1/blogpost/${input.data.id}`, {
+      console.log(input.results.id);
+      await $fetch(`${baseUrl}/api/v1/blogpost/${input.results.id}`, {
         method: "DELETE",
       });
     });
