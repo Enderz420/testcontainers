@@ -1,10 +1,12 @@
 import { mockNuxtImport, registerEndpoint } from "@nuxt/test-utils/runtime";
 import { debug } from "debug";
 import { readBody } from "h3";
-import { describe, expect, it } from "vitest";
+import { describe, expect, inject, it } from "vitest";
 import { ref } from "vue";
 import { useBlogpost } from "../../../app/composables/useBlogpost";
 import { PostBlogpost } from "../../../shared/types/blogpost";
+
+const baseUrl = inject("e2eBaseUrl");
 
 mockNuxtImport("useFetch", () => {
   return async (url: string, options?: any) => {
@@ -24,14 +26,14 @@ mockNuxtImport("useFetch", () => {
 
 registerEndpoint("/blogpost", {
   method: "GET",
-  handler: () => $fetch("http://localhost:4000/api/v1/blogpost"),
+  handler: () => $fetch(`${baseUrl}/api/v1/blogpost`),
 });
 
 registerEndpoint("/blogpost", {
   method: "POST",
   handler: async (event) => {
     const body = await readBody(event);
-    return $fetch("http://localhost:4000/api/v1/blogpost", {
+    return $fetch(`${baseUrl}/api/v1/blogpost`, {
       method: "POST",
       body,
     });
@@ -42,8 +44,6 @@ describe(
   "test blogpost",
   { tags: ["blogpost", "testcontainers"] },
   async () => {
-    const baseUrl = "http://localhost:4000";
-
     debug.enable("testcontainers*");
 
     const { getAllBlogposts, createBlogpost, deleteBlogpost } = useBlogpost();
@@ -66,7 +66,7 @@ describe(
       expect(input.data.created_by).toBe(body.created_by);
       console.log("test passed");
       console.log(input.data.id);
-      await $fetch(`http://localhost:4000/api/v1/blogpost/${input.data.id}`, {
+      await $fetch(`${baseUrl}/api/v1/blogpost/${input.data.id}`, {
         method: "DELETE",
       });
     });

@@ -15,11 +15,11 @@ export async function setup(module: TestProject) {
     "../",
     "./deployment/docker-compose.testing.yaml",
   )
-    .withWaitStrategy("migrate", Wait.forOneShotStartup())
+    .withWaitStrategy("migrate-1", Wait.forOneShotStartup())
     .up();
 
-  const port = environment.getContainer("backend").getMappedPort(4000);
-  module.provide("integrationsBaseUrl", `http://localhost:${port}`);
+  const port = environment.getContainer("backend-1").getMappedPort(4000);
+  module.provide("e2eBaseUrl", `http://localhost:${port}`);
 }
 
 export async function teardown() {
