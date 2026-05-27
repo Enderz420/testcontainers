@@ -8,12 +8,12 @@ export type Blogpost = {
 };
 
 export type BlogpostListResponse = {
-  data: Blogpost[];
+  results: Blogpost[];
   metadata: Metadata;
 };
 
 export type BlogpostResponse = {
-  data: Blogpost;
+  results: Blogpost;
   metadata: Metadata;
 };
 

@@ -1,4 +1,20 @@
+/**
+ * @name useBlogpost
+ * @description useBlogpost Composable to enable CRUD related operations
+ *
+ * @returns CRUD operations related to blogpost
+ */
 export function useBlogpost() {
+  /**
+   * @name getAllBlogposts
+   * @description Fetches all blogposts
+   * @example ```
+   *  const { getAllBlogposts } = useBlogpost();
+   *  const response = await getAllBlogposts();
+   *  console.log(response)
+   * ```
+   * @returns Promise<BlogpostListResponse>
+   */
   const getAllBlogposts = async (): Promise<BlogpostListResponse> => {
     const { data, error } = await useFetch<BlogpostListResponse>("/blogpost", {
       method: "GET",
@@ -13,6 +29,13 @@ export function useBlogpost() {
     return data.value;
   };
 
+  /**
+   * @name createBlogpost
+   * @description Creates a blogpost
+   * @param body: PostBlogpost
+   * @returns
+   * Promise<BlogpostResponse>
+   */
   const createBlogpost = async (
     body: PostBlogpost,
   ): Promise<BlogpostResponse> => {
@@ -28,7 +51,12 @@ export function useBlogpost() {
     if (!data.value) throw new Error("No data returned");
     return data.value;
   };
-
+  /**
+   * @name deleteBlogpost
+   * @description Delets a blogpost
+   * @param id: string
+   * @returns Promise<BlogpostResponse>
+   */
   const deleteBlogpost = async (id: string): Promise<string> => {
     const { status, error } = await useFetch(`/blogpost/${id}`, {
       method: "DELETE",

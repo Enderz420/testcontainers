@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   modules: ["@nuxt/ui"],
   runtimeConfig: {
     public: {
-      url: "http://localhost:4000",
+      url: "http://localhost:4000", // Default URL. Would typically be set by either an env file or the test suite
     },
   },
   hooks: {
@@ -25,6 +25,16 @@ export default defineNuxtConfig({
         });
       pages.length = 0;
       pages.push(...filteredPages);
+    },
+  },
+
+  typescript: {
+    typeCheck: true,
+    tsConfig: {
+      compilerOptions: {
+        types: ["vitest/globals"],
+      },
+      include: ["/vitest.shims.d.ts"],
     },
   },
 });

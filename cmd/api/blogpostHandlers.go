@@ -13,7 +13,7 @@ import (
 )
 
 type BlogpostResponse struct {
-	Data data.Blogpost `json:"data"`
+	Data data.Blogpost `json:"results"`
 }
 
 type BlogpostListResponse struct {

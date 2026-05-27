@@ -1,8 +1,6 @@
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    ports:
-      - "1433:1433"
     environment:
       SA_PASSWORD: "oPax9HFmjU4AVAqXEeA"
       ACCEPT_EULA: "Y"
@@ -48,5 +46,5 @@ services:
       migrate:
         condition: service_completed_successfully
     ports:
-      - "4000:4000"
+      - "4000"
     restart: "no"

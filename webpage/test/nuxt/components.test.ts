@@ -1,6 +1,6 @@
 import { mountSuspended } from "@nuxt/test-utils/runtime";
 import { describe, expect, it } from "vitest";
-import Navbar from "~/components/Navbar.vue";
+import Navbar from "../../app/components/Navbar.vue";
 
 describe("component", async () => {
   it("mounts component and checks p tag for test", async () => {
