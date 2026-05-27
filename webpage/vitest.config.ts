@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     // globalSetup: ["./test/setup/global.ts"],
+
     tags: [
       {
         name: "user",
@@ -43,6 +44,8 @@ export default defineConfig({
           globalSetup: ["./test/setup/e2e.global.ts"],
           hookTimeout: 120_000,
           testTimeout: 15_000,
+          pool: "forks",
+          fileParallelism: false,
         },
       }),
       {
@@ -53,6 +56,8 @@ export default defineConfig({
           globalSetup: ["./test/setup/integrations.global.ts"],
           hookTimeout: 120_000,
           testTimeout: 15_000,
+          pool: "forks",
+          fileParallelism: false,
         },
       },
     ],
