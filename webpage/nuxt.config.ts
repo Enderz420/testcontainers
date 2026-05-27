@@ -27,4 +27,13 @@ export default defineNuxtConfig({
       pages.push(...filteredPages);
     },
   },
+
+  typescript: {
+    typeCheck: true,
+    tsConfig: {
+      compilerOptions: {
+        types: ["vitest/globals"],
+      },
+    },
+  },
 });

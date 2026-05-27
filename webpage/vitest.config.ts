@@ -23,14 +23,14 @@ export default defineConfig({
       await defineVitestProject({
         test: {
           name: "e2e",
-          include: ["test/e2e/*.{test,spec}.ts"],
+          include: ["test/e2e/**/*.{test,spec}.ts"],
           environment: "nuxt",
         },
       }),
       {
         test: {
           name: "integrations",
-          include: ["test/integrations/*.{test,spec}.ts"],
+          include: ["test/integrations/**/*.{test,spec}.ts"],
           environment: "node",
           // globalSetup: ["./test/setup/global.ts"],
         },

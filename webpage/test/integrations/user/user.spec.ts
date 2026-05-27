@@ -1,13 +1,8 @@
 import { $fetch, setup } from "@nuxt/test-utils/e2e";
 import { debug } from "debug";
 import { fileURLToPath } from "node:url";
-import {
-  DockerComposeEnvironment,
-  StartedDockerComposeEnvironment,
-  Wait,
-} from "testcontainers";
-import { afterAll, beforeAll, describe, it } from "vitest";
-import { PostUser } from "../../shared/types/user";
+import { describe, it } from "vitest";
+import { PostUser } from "../../../shared/types/user";
 
 // const baseUrl = "http://localhost:4000";
 
