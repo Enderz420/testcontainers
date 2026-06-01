@@ -1,3 +1,6 @@
-export default defineNuxtRouteMiddleware(async () => {
-  console.log("This middleware runs");
+export default defineNuxtRouteMiddleware((to, from) => {
+  logger.info("user navigation", {
+    to: to.path,
+    from: from.path,
+  });
 });
