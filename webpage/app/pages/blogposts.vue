@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import postcssPluginWarning from "tailwindcss";
 import Blogpost from "~/components/Blogpost.vue";
 
 const { getAllBlogposts } = useBlogpost();
 
-const { data } = await getAllBlogposts();
+const data = await getAllBlogposts();
 </script>
 <template>
+  <h1>Blogposts</h1>
   <Blogpost
-    v-for="(post, index) in data"
+    v-for="(post, index) in data.results"
     :item="post"
     :index="index"
     :key="post.id"

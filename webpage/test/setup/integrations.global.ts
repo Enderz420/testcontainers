@@ -9,7 +9,7 @@ import { TestProject } from "vitest/node";
 let environment: StartedDockerComposeEnvironment;
 
 export async function setup(module: TestProject) {
-  debug.enable("testcontainers*");
+  // debug.enable("testcontainers*");
 
   environment = await new DockerComposeEnvironment(
     "../",
