@@ -4,7 +4,7 @@ BEGIN
         user_id  UNIQUEIDENTIFIER NOT NULL,
         group_id UNIQUEIDENTIFIER NOT NULL,
         CONSTRAINT PK_user_group_junctions PRIMARY KEY (user_id, group_id),
-        CONSTRAINT FK_ugj_user  FOREIGN KEY (user_id)  REFERENCES dbo.[User](id)  ON DELETE CASCADE,
-        CONSTRAINT FK_ugj_group FOREIGN KEY (group_id) REFERENCES dbo.Groups(id) ON DELETE CASCADE
+        CONSTRAINT FK_ugj_user  FOREIGN KEY (user_id)  REFERENCES dbo.users(id)  ON DELETE CASCADE,
+        CONSTRAINT FK_ugj_group FOREIGN KEY (group_id) REFERENCES dbo.groups(id) ON DELETE CASCADE
     );
 END
