@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS [blogpost];
+DROP TABLE IF EXISTS core.blogpost;

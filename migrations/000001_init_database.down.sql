@@ -1,1 +1,7 @@
 DROP TABLE IF EXISTS [users];
+
+IF
+EXISTS (SELECT SCHEMA_ID FROM sys.schemas WHERE [name] = 'core')
+BEGIN
+EXEC('DROP SCHEMA [core]')
+END

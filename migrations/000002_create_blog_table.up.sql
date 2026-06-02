@@ -1,6 +1,6 @@
-IF OBJECT_ID('dbo.blogpost', 'U') IS NULL
+IF OBJECT_ID('core.blogpost', 'U') IS NULL
 BEGIN
-    CREATE TABLE blogpost (
+    CREATE TABLE core.blogpost (
         id UNIQUEIDENTIFIER PRIMARY KEY,
         title NVARCHAR(255) NOT NULL,
         content NVARCHAR(MAX),
