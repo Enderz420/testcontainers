@@ -37,7 +37,7 @@ func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-INSERT INTO [User] (
+INSERT INTO core.[users] (
 	id,
 	username,
 	email,
@@ -99,7 +99,7 @@ func (m UserModel) SelectAll(ctx context.Context) ([]*User, *database.Metadata, 
 
 	stmt := `
 SELECT id, username, email, created_at, updated_at
-FROM [User]
+FROM core.[users]
 ORDER BY id DESC;
 `
 
@@ -152,12 +152,12 @@ ORDER BY id DESC;
 	return results, &metadata, nil
 }
 
-func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
+func (m UserModel) SelectOne(ctx context.Context, id uuid.UUID) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
 SELECT id, username, email, created_at, updated_at
-FROM [User]
+FROM core.[users]
 WHERE id = @ID;
 `
 
@@ -196,11 +196,11 @@ WHERE id = @ID;
 	return &user, nil
 }
 
-func (m UserModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error {
+func (m UserModel) Delete(ctx context.Context, id uuid.UUID) error {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-DELETE FROM [User]
+DELETE FROM core.[users]
 WHERE id = @ID;
 `
 

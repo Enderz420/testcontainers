@@ -9,7 +9,6 @@ import (
 	"enderz.net/testcontainer-test/internal/logging"
 	"enderz.net/testcontainer-test/internal/rest"
 	"github.com/google/uuid"
-	mssql "github.com/microsoft/go-mssqldb"
 )
 
 type BlogpostResponse struct {
@@ -30,7 +29,7 @@ func (a application) GetBlogpostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	result, err := a.models.Blogpost.SelectOne(ctx, mssql.UniqueIdentifier(id))
+	result, err := a.models.Blogpost.SelectOne(ctx, id)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return
@@ -58,14 +57,14 @@ func (a application) PostBlogpostHandler(w http.ResponseWriter, r *http.Request)
 	logger := logging.LoggerFromContext(ctx)
 
 	var blogpost data.BlogpostInput
-	
+
 	if err := rest.ReadJSON(r, &blogpost); err != nil {
-		logger.Error("failed to read JSON", "error", err)  
+		logger.Error("failed to read JSON", "error", err)
 		rest.BadRequestResponse(w, r, "unable to parse request body")
 		return
 	}
 	logger.Log(ctx, slog.LevelInfo, "request", slog.Any("body", blogpost))
-	
+
 	result, err := a.models.Blogpost.Insert(ctx, blogpost)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
@@ -84,7 +83,7 @@ func (a application) DeleteBlogpostHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = a.models.Blogpost.Delete(ctx, mssql.UniqueIdentifier(id))
+	err = a.models.Blogpost.Delete(ctx, id)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return

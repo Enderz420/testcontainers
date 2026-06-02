@@ -21,22 +21,22 @@ type Blogpost struct {
 	ID        mssql.UniqueIdentifier `json:"id"`
 	Title     string                 `json:"title"`
 	Content   string                 `json:"content"`
-	CreatedBy string				 `json:"created_by"`
+	CreatedBy string                 `json:"created_by"`
 	CreatedAt time.Time              `json:"created_at"`
 	UpdatedAt time.Time              `json:"updated_at"`
 }
 
 type BlogpostInput struct {
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	CreatedBy string 	`json:"created_by"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	CreatedBy string `json:"created_by"`
 }
 
 func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpost, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	const stmt string = `
-	INSERT INTO Blogpost (
+	INSERT INTO core.blogpost (
 		id,
 		title,
 		content,
@@ -84,12 +84,12 @@ func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpo
 	return &blogpost, nil
 }
 
-func (m BlogpostModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*Blogpost, error) {
+func (m BlogpostModel) SelectOne(ctx context.Context, id uuid.UUID) (*Blogpost, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	const stmt string = `
 	SELECT id, title, content, created_by, created_at, updated_at
-	FROM Blogpost
+	FROM core.blogpost
 	WHERE id = @ID
 	`
 
@@ -126,7 +126,7 @@ func (m BlogpostModel) SelectAll(ctx context.Context) ([]*Blogpost, *database.Me
 
 	const stmt string = `
 	SELECT id, title, content, created_by, created_at, updated_at
-	FROM Blogpost
+	FROM core.blogpost
 	ORDER BY "id"
 	`
 
@@ -172,13 +172,13 @@ func (m BlogpostModel) SelectAll(ctx context.Context) ([]*Blogpost, *database.Me
 	return results, &metadata, nil
 }
 
-func (m BlogpostModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error {
+func (m BlogpostModel) Delete(ctx context.Context, id uuid.UUID) error {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-	DELETE FROM Blogpost
+	DELETE FROM core.blogpost
 	WHERE id = @ID;
-	`	
+	`
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
 	defer cancel()

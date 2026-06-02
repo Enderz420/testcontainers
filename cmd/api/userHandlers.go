@@ -10,7 +10,6 @@ import (
 	"enderz.net/testcontainer-test/internal/models"
 	"enderz.net/testcontainer-test/internal/rest"
 	"github.com/google/uuid"
-	mssql "github.com/microsoft/go-mssqldb"
 )
 
 type UserResponse struct {
@@ -23,8 +22,8 @@ type UserListResponse struct {
 }
 
 type PostUserRequest struct {
-	Username string    `json:"username"`
-	Email    string    `json:"email"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
 }
 
 func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +106,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.models.Users.SelectOne(ctx, mssql.UniqueIdentifier(id))
+	user, err := app.models.Users.SelectOne(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
@@ -142,7 +141,7 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.models.Users.Delete(ctx, mssql.UniqueIdentifier(id))
+	err = app.models.Users.Delete(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
