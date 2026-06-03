@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"enderz.net/testcontainer-test/internal/logging"
+	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
 )
 
@@ -76,4 +77,27 @@ func (m *GroupModel) Insert(ctx context.Context, input GroupInsert) (*Group, err
 	}
 
 	return &group, nil
+}
+
+func (m *GroupModel) Delete(ctx context.Context, id uuid.UUID) error {
+	const stmt = `
+	DELETE FROM core.groups
+	WHERE id = @ID
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	logger := logging.LoggerFromContext(ctx).With(
+		slog.Group("query", slog.String("statement", stmt), "group", id),
+	)
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "performing query")
+
+	row := m.DB.QueryRowContext(ctx, stmt, sql.Named("ID", id))
+	if err := row.Scan(); err != nil {
+		return err
+	}
+
+	return nil
 }
