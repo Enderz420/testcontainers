@@ -32,6 +32,13 @@ type BlogpostInput struct {
 	CreatedBy string `json:"created_by"`
 }
 
+type BlogpostPatch struct {
+	ID        uuid.UUID `json:"id"`
+	Title     *string   `json:"title"`
+	Content   *string   `json:"content"`
+	CreatedBy *string   `json:"created_by"`
+}
+
 func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpost, error) {
 	logger := logging.LoggerFromContext(ctx)
 
@@ -199,6 +206,44 @@ func (m BlogpostModel) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	logger.Info("blogpost deleted successfully")
+	logger.InfoContext(ctx, "blogpost deleted successfully")
 	return nil
+}
+
+func (m *BlogpostModel) Update(ctx context.Context, input BlogpostPatch) (*Blogpost, error) {
+
+	logger := logging.LoggerFromContext(ctx)
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	const stmt = `
+	UPDATE core.blogpost
+	OUTPUT
+		INSERTED.id,
+		INSERTED.title,
+		INSERTED.content,
+		INSERTED.created_by,
+		INSERTED.created_at,
+		INSERTED.updated_at
+	SET
+		title = COALESCE(@Title, title),
+		content = COALESCE(@Content, content),
+		created_by = COALESCE(@CreatedBy, created_by),
+		updated_at = GETUTCDATE()
+	WHERE id = @ID;
+	`
+
+	logger.InfoContext(ctx, "performing update query", slog.String("statement", stmt))
+
+	var blogpost Blogpost
+	row := m.DB.QueryRowContext(ctx, stmt, sql.Named("ID", input.ID), sql.Named("Title", input.Title), sql.Named("Content", input.Content), sql.Named("CreatedBy", input.CreatedBy))
+	if err := row.Scan(&blogpost.ID, &blogpost.Title, &blogpost.Content, &blogpost.CreatedBy, &blogpost.CreatedAt, &blogpost.UpdatedAt); err != nil {
+		logger.ErrorContext(ctx, "error updating blogpost", "error", err)
+		return nil, err
+	}
+
+	logger.InfoContext(ctx, "blogpost updated successfully")
+
+	return &blogpost, nil
 }

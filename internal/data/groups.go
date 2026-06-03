@@ -94,8 +94,8 @@ func (m *GroupModel) Delete(ctx context.Context, id uuid.UUID) error {
 
 	logger.LogAttrs(ctx, slog.LevelInfo, "performing query")
 
-	row := m.DB.QueryRowContext(ctx, stmt, sql.Named("ID", id))
-	if err := row.Scan(); err != nil {
+	_, err := m.DB.ExecContext(ctx, stmt, sql.Named("ID", id))
+	if err != nil {
 		return err
 	}
 
