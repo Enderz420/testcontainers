@@ -50,7 +50,7 @@ func (m BlogpostModel) Insert(ctx context.Context, input BlogpostInput) (*Blogpo
 		INSERTED.created_by,
 		INSERTED.created_at,
 		INSERTED.updated_at
-	VALUES (NEWID(), @Title, @Content, @Createdby, GETDATE(), GETDATE())
+	VALUES (NEWID(), @Title, @Content, @Createdby, GETUTCDATE(), GETUTCDATE())
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)

@@ -50,7 +50,7 @@ OUTPUT
 	INSERTED.created_at,
 	INSERTED.updated_at
 VALUES (
-	NEWID(), @Username, @Email, GETDATE(), GETDATE()
+	NEWID(), @Username, @Email, GETUTCDATE(), GETUTCDATE()
 )
 `
 
