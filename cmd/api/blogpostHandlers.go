@@ -29,7 +29,7 @@ func (a application) GetBlogpostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	result, err := a.models.Blogpost.SelectOne(ctx, id)
+	result, err := a.repo.Blogpost.Read(ctx, id)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return
@@ -40,7 +40,7 @@ func (a application) GetBlogpostHandler(w http.ResponseWriter, r *http.Request) 
 func (a application) ListBlogpostHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	result, metadata, err := a.models.Blogpost.SelectAll(ctx)
+	result, metadata, err := a.repo.Blogpost.List(ctx)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return
@@ -65,7 +65,7 @@ func (a application) PostBlogpostHandler(w http.ResponseWriter, r *http.Request)
 	}
 	logger.Log(ctx, slog.LevelInfo, "request", slog.Any("body", blogpost))
 
-	result, err := a.models.Blogpost.Insert(ctx, blogpost)
+	result, err := a.repo.Blogpost.Create(ctx, blogpost)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return
@@ -83,7 +83,7 @@ func (a application) DeleteBlogpostHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = a.models.Blogpost.Delete(ctx, id)
+	err = a.repo.Blogpost.Delete(ctx, id)
 	if err != nil {
 		rest.ServerErrorResponse(w, r, err)
 		return
