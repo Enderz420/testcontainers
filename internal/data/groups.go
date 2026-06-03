@@ -22,7 +22,8 @@ type GroupInsert struct {
 }
 
 type GroupModel struct {
-	DB *sql.DB
+	DB      *sql.DB
+	Timeout *time.Duration
 }
 
 func (m *GroupModel) SelectOne(
@@ -35,6 +36,9 @@ func (m *GroupModel) SelectOne(
 	FROM core.groups
 	WHERE id = @ID
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
 
 	logger := logging.LoggerFromContext(ctx)
 
@@ -49,12 +53,16 @@ func (m *GroupModel) SelectOne(
 	return &group, nil
 }
 
-func (m *GroupModel) insert(ctx context.Context, input GroupInsert) (*Group, error) {
+func (m *GroupModel) Insert(ctx context.Context, input GroupInsert) (*Group, error) {
 	const stmt = `
 	INSERT INTO core.groups (name)
 	OUTPUT INSERTED.id, INSERTED.name, INSERTED.created_at, INSERTED.last_modified
 	VALUES (@Name)
 	`
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
 	logger := logging.LoggerFromContext(ctx).With(
 		slog.Group("query", slog.String("statement", stmt), "group", input),
 	)

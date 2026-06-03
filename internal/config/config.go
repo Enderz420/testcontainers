@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
 	"enderz.net/testcontainer-test/internal/database"
@@ -32,7 +31,6 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(cfg)
-	
+
 	return &cfg, nil
 }

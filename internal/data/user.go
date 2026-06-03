@@ -57,9 +57,6 @@ VALUES (
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
 	defer cancel()
 
-	newUUID := uuid.New()
-	us.ID = mssql.UniqueIdentifier(newUUID)
-
 	var result User
 
 	logger = logger.With(
