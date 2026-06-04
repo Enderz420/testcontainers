@@ -23,6 +23,17 @@ type User struct {
 	UpdatedAt time.Time              `json:"updated_at"`
 }
 
+type UserInput struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
+type UserPatch struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+}
+
 type UserModel struct {
 	DB      *sql.DB
 	Timeout *time.Duration
@@ -33,7 +44,7 @@ var (
 	ErrDuplicateEmail    = errors.New("duplicate email")
 )
 
-func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
+func (m UserModel) Insert(ctx context.Context, input UserInput) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
@@ -63,7 +74,7 @@ VALUES (
 		slog.Group(
 			"query",
 			slog.String("statement", stmt),
-			"user", us,
+			"user", input,
 		),
 	)
 
@@ -72,8 +83,8 @@ VALUES (
 	err := m.DB.QueryRowContext(
 		ctx,
 		stmt,
-		sql.Named("Username", us.Username),
-		sql.Named("Email", us.Email),
+		sql.Named("Username", input.Username),
+		sql.Named("Email", input.Email),
 	).Scan(
 		&result.ID,
 		&result.Username,
@@ -222,4 +233,41 @@ WHERE id = @ID;
 
 	logger.Info("user deleted successfully")
 	return nil
+}
+
+func (m UserModel) Update(ctx context.Context, input UserPatch) (*User, error) {
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	const stmt = `
+		UPDATE core.[users]
+		OUTPUT
+			INSERTED.id,
+			INSERTED.username,
+			INSERTED.email,
+			INSERTED.created_at,
+			INSERTED.updated_at
+		SET
+			username = COALESCE(@Username, username),
+			email = COALESCE(@Email, email),
+			updated_at = GETUTCDATE()
+		WHERE id = @ID;
+		`
+
+	logger := logging.LoggerFromContext(ctx)
+
+	var user User
+
+	row := m.DB.QueryRowContext(ctx, stmt,
+		sql.Named("ID", input.ID),
+		sql.Named("Username", input.Username),
+		sql.Named("Email", input.Email),
+	)
+
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		logger.ErrorContext(ctx, "error scanning row", "error", err)
+		return nil, err
+	}
+
+	return &user, nil
 }
