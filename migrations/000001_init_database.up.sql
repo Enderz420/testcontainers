@@ -1,10 +1,5 @@
-IF OBJECT_ID('dbo.[User]', 'U') IS NULL
+IF
+NOT EXISTS (SELECT SCHEMA_ID FROM sys.schemas WHERE [name] = 'core')
 BEGIN
-    CREATE TABLE [User] (
-        id UNIQUEIDENTIFIER PRIMARY KEY,
-        username NVARCHAR(255) NOT NULL UNIQUE,
-        email NVARCHAR(255) NOT NULL,
-        created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
-        updated_at DATETIME2 NULL
-    )   
+EXEC('CREATE SCHEMA [core] AUTHORIZATION dbo')
 END

@@ -10,7 +10,6 @@ import (
 	"enderz.net/testcontainer-test/internal/models"
 	"enderz.net/testcontainer-test/internal/rest"
 	"github.com/google/uuid"
-	mssql "github.com/microsoft/go-mssqldb"
 )
 
 type UserResponse struct {
@@ -23,6 +22,7 @@ type UserListResponse struct {
 }
 
 type PostUserRequest struct {
+	ID       uuid.UUID `json:"id"`
 	Username string    `json:"username"`
 	Email    string    `json:"email"`
 }
@@ -39,12 +39,12 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := &data.User{
+	user := &data.UserInput{
 		Username: req.Username,
 		Email:    req.Email,
 	}
 
-	result, err := app.models.Users.Insert(ctx, user)
+	result, err := app.repo.User.Create(ctx, *user)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrDuplicateUsername):
@@ -76,7 +76,7 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger := logging.LoggerFromContext(ctx)
 
-	result, metadata, err := app.models.Users.SelectAll(ctx)
+	result, metadata, err := app.repo.User.List(ctx)
 	if err != nil {
 		logger.ErrorContext(ctx, "unable to retrieve users", "error", err)
 		rest.ServerErrorResponse(w, r, err)
@@ -107,7 +107,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.models.Users.SelectOne(ctx, mssql.UniqueIdentifier(id))
+	user, err := app.repo.User.Read(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
@@ -142,7 +142,7 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.models.Users.Delete(ctx, mssql.UniqueIdentifier(id))
+	err = app.repo.User.Delete(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):

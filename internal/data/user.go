@@ -23,6 +23,17 @@ type User struct {
 	UpdatedAt time.Time              `json:"updated_at"`
 }
 
+type UserInput struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
+type UserPatch struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+}
+
 type UserModel struct {
 	DB      *sql.DB
 	Timeout *time.Duration
@@ -33,11 +44,11 @@ var (
 	ErrDuplicateEmail    = errors.New("duplicate email")
 )
 
-func (m UserModel) Insert(ctx context.Context, us *User) (*User, error) {
+func (m UserModel) Insert(ctx context.Context, input UserInput) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-INSERT INTO [User] (
+INSERT INTO core.[users] (
 	id,
 	username,
 	email,
@@ -50,15 +61,12 @@ OUTPUT
 	INSERTED.created_at,
 	INSERTED.updated_at
 VALUES (
-	NEWID(), @Username, @Email, GETDATE(), GETDATE()
+	NEWID(), @Username, @Email, GETUTCDATE(), GETUTCDATE()
 )
 `
 
 	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
 	defer cancel()
-
-	newUUID := uuid.New()
-	us.ID = mssql.UniqueIdentifier(newUUID)
 
 	var result User
 
@@ -66,7 +74,7 @@ VALUES (
 		slog.Group(
 			"query",
 			slog.String("statement", stmt),
-			"user", us,
+			"user", input,
 		),
 	)
 
@@ -75,8 +83,8 @@ VALUES (
 	err := m.DB.QueryRowContext(
 		ctx,
 		stmt,
-		sql.Named("Username", us.Username),
-		sql.Named("Email", us.Email),
+		sql.Named("Username", input.Username),
+		sql.Named("Email", input.Email),
 	).Scan(
 		&result.ID,
 		&result.Username,
@@ -99,7 +107,7 @@ func (m UserModel) SelectAll(ctx context.Context) ([]*User, *database.Metadata, 
 
 	stmt := `
 SELECT id, username, email, created_at, updated_at
-FROM [User]
+FROM core.[users]
 ORDER BY id DESC;
 `
 
@@ -152,12 +160,12 @@ ORDER BY id DESC;
 	return results, &metadata, nil
 }
 
-func (m UserModel) SelectOne(ctx context.Context, id mssql.UniqueIdentifier) (*User, error) {
+func (m UserModel) SelectOne(ctx context.Context, id uuid.UUID) (*User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
 SELECT id, username, email, created_at, updated_at
-FROM [User]
+FROM core.[users]
 WHERE id = @ID;
 `
 
@@ -196,11 +204,11 @@ WHERE id = @ID;
 	return &user, nil
 }
 
-func (m UserModel) Delete(ctx context.Context, id mssql.UniqueIdentifier) error {
+func (m UserModel) Delete(ctx context.Context, id uuid.UUID) error {
 	logger := logging.LoggerFromContext(ctx)
 
 	stmt := `
-DELETE FROM [User]
+DELETE FROM core.[users]
 WHERE id = @ID;
 `
 
@@ -225,4 +233,41 @@ WHERE id = @ID;
 
 	logger.Info("user deleted successfully")
 	return nil
+}
+
+func (m UserModel) Update(ctx context.Context, input UserPatch) (*User, error) {
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	const stmt = `
+		UPDATE core.[users]
+		SET
+			username = COALESCE(@Username, username),
+			email = COALESCE(@Email, email),
+			updated_at = GETUTCDATE()
+		OUTPUT
+			INSERTED.id,
+			INSERTED.username,
+			INSERTED.email,
+			INSERTED.created_at,
+			INSERTED.updated_at
+		WHERE id = @ID;
+		`
+
+	logger := logging.LoggerFromContext(ctx)
+
+	var user User
+
+	row := m.DB.QueryRowContext(ctx, stmt,
+		sql.Named("ID", input.ID),
+		sql.Named("Username", input.Username),
+		sql.Named("Email", input.Email),
+	)
+
+	if err := row.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		logger.ErrorContext(ctx, "error scanning row", "error", err)
+		return nil, err
+	}
+
+	return &user, nil
 }

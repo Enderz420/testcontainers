@@ -11,6 +11,7 @@ import (
 	"enderz.net/testcontainer-test/internal/config"
 	"enderz.net/testcontainer-test/internal/data"
 	"enderz.net/testcontainer-test/internal/database"
+	"enderz.net/testcontainer-test/internal/repo"
 	"enderz.net/testcontainer-test/internal/rest"
 	_ "github.com/microsoft/go-mssqldb"
 )
@@ -18,7 +19,7 @@ import (
 type application struct {
 	config *config.Config
 	db     *sql.DB
-	models data.Models
+	repo   *repo.Repo
 }
 
 func main() {
@@ -39,10 +40,12 @@ func main() {
 	}
 
 	dbTimeout := time.Duration(cfg.DB.Timeout) * time.Second
+	models := data.NewModels(db, &dbTimeout)
+
 	app := &application{
 		config: cfg,
 		db:     db,
-		models: data.NewModels(db, &dbTimeout),
+		repo:   repo.NewRepo(db, &models),
 	}
 
 	srv := &http.Server{

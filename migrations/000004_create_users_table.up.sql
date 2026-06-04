@@ -1,0 +1,10 @@
+IF OBJECT_ID('core.users', 'U') IS NULL
+BEGIN
+    CREATE TABLE core.users (
+        id UNIQUEIDENTIFIER PRIMARY KEY,
+        username NVARCHAR(255) NOT NULL UNIQUE,
+        email NVARCHAR(255) NOT NULL UNIQUE,
+        created_at DATETIME NOT NULL DEFAULT GETUTCDATE(),
+        updated_at DATETIME NOT NULL DEFAULT GETUTCDATE()
+    )
+END
