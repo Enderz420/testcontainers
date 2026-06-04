@@ -241,16 +241,16 @@ func (m UserModel) Update(ctx context.Context, input UserPatch) (*User, error) {
 
 	const stmt = `
 		UPDATE core.[users]
+		SET
+			username = COALESCE(@Username, username),
+			email = COALESCE(@Email, email),
+			updated_at = GETUTCDATE()
 		OUTPUT
 			INSERTED.id,
 			INSERTED.username,
 			INSERTED.email,
 			INSERTED.created_at,
 			INSERTED.updated_at
-		SET
-			username = COALESCE(@Username, username),
-			email = COALESCE(@Email, email),
-			updated_at = GETUTCDATE()
 		WHERE id = @ID;
 		`
 

@@ -39,13 +39,12 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := &data.UserPatch{
-		ID:       req.ID,
+	user := &data.UserInput{
 		Username: req.Username,
 		Email:    req.Email,
 	}
 
-	result, err := app.repo.User.Update(ctx, *user)
+	result, err := app.repo.User.Create(ctx, *user)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrDuplicateUsername):
