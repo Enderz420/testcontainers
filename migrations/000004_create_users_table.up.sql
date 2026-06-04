@@ -1,6 +1,6 @@
-IF OBJECT_ID('core.[users]', 'U') IS NULL
+IF OBJECT_ID('core.users', 'U') IS NULL
 BEGIN
-    CREATE TABLE [users] (
+    CREATE TABLE core.users (
         id UNIQUEIDENTIFIER PRIMARY KEY,
         username NVARCHAR(255) NOT NULL UNIQUE,
         email NVARCHAR(255) NOT NULL UNIQUE,
