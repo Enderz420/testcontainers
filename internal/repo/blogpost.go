@@ -56,17 +56,62 @@ func (r *BlogpostService) Read(ctx context.Context, id uuid.UUID) (*data.Blogpos
 }
 
 func (r *BlogpostService) List(ctx context.Context) ([]*data.Blogpost, *database.Metadata, error) {
-	return nil, nil, nil
+	ctx, logger := logging.ContextLogger(ctx, slog.Group(
+		"listBlogpost"))
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "listing blogposts")
+
+	blogposts, metadata, err := r.models.Blogpost.SelectAll(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "blogposts listed successfully", slog.Int("count", len(blogposts)))
+
+	return blogposts, metadata, nil
 }
 
 func (r *BlogpostService) Create(ctx context.Context, input data.BlogpostInput) (*data.Blogpost, error) {
-	return nil, nil
+	ctx, logger := logging.ContextLogger(ctx, slog.Group(
+		"createBlogpost", slog.Any("input", input)))
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "creating blogpost")
+	blogpost, err := r.models.Blogpost.Insert(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "blogpost created successfully", slog.Any("blogpost", blogpost))
+
+	return blogpost, nil
 }
 
 func (r *BlogpostService) Update(ctx context.Context, id uuid.UUID, input data.BlogpostPatch) (*data.Blogpost, error) {
-	return nil, nil
+	ctx, logger := logging.ContextLogger(ctx, slog.Group(
+		"updateBlogpost", slog.Any("input", input)))
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "updating blogpost")
+	blogpost, err := r.models.Blogpost.Update(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "blogpost updated successfully", slog.Any("blogpost", blogpost))
+
+	return blogpost, nil
 }
 
 func (r *BlogpostService) Delete(ctx context.Context, id uuid.UUID) error {
+	ctx, logger := logging.ContextLogger(ctx, slog.Group(
+		"deleteBlogpost", slog.Any("id", id)))
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "deleting blogpost")
+	err := r.models.Blogpost.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "blogpost deleted successfully", slog.Any("id", id))
+
 	return nil
 }

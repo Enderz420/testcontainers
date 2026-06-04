@@ -22,8 +22,9 @@ type UserListResponse struct {
 }
 
 type PostUserRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
 }
 
 func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +39,13 @@ func (app *application) PostUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := &data.User{
+	user := &data.UserPatch{
+		ID:       req.ID,
 		Username: req.Username,
 		Email:    req.Email,
 	}
 
-	result, err := app.models.Users.Insert(ctx, user)
+	result, err := app.repo.User.Update(ctx, *user)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrDuplicateUsername):
@@ -75,7 +77,7 @@ func (app *application) ListUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	logger := logging.LoggerFromContext(ctx)
 
-	result, metadata, err := app.models.Users.SelectAll(ctx)
+	result, metadata, err := app.repo.User.List(ctx)
 	if err != nil {
 		logger.ErrorContext(ctx, "unable to retrieve users", "error", err)
 		rest.ServerErrorResponse(w, r, err)
@@ -106,7 +108,7 @@ func (app *application) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.models.Users.SelectOne(ctx, id)
+	user, err := app.repo.User.Read(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):
@@ -141,7 +143,7 @@ func (app *application) DeleteUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = app.models.Users.Delete(ctx, id)
+	err = app.repo.User.Delete(ctx, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrRecordNotFound):

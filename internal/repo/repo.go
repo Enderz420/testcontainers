@@ -9,11 +9,13 @@ import (
 type Repo struct {
 	models   *data.Models
 	Blogpost BlogpostReaderWriter
+	User     UserReaderWriter
 }
 
 func NewRepo(db *sql.DB, models *data.Models) *Repo {
 	return &Repo{
 		models:   models,
 		Blogpost: NewBlogpostService(db, models),
+		User:     NewUserService(db, models),
 	}
 }
