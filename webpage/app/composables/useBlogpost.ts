@@ -28,6 +28,32 @@ export function useBlogpost() {
 
     return data.value;
   };
+  /**
+   * @name getBlogpost
+   * @description Fetches all blogposts
+   * @example ```
+   *  const { getBlogpost } = useBlogpost();
+   *  const response = await getBlogpost(id);
+   *  console.log(response)
+   * ```
+   * @returns Promise<BlogpostResponse>
+   */
+  const getBlogpost = async (id: string): Promise<Blogpost> => {
+    const { data, error } = await useFetch<BlogpostResponse>(
+      `/blogpost/${id}`,
+      {
+        method: "GET",
+      },
+    );
+
+    console.log("error:", error.value);
+    console.log("data:", data.value);
+
+    if (error.value) throw error.value;
+    if (!data.value) throw new Error("No data returned");
+
+    return data.value.results;
+  };
 
   /**
    * @name createBlogpost
@@ -71,6 +97,7 @@ export function useBlogpost() {
   return {
     deleteBlogpost,
     getAllBlogposts,
+    getBlogpost,
     createBlogpost,
   };
 }

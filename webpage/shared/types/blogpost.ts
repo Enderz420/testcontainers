@@ -14,7 +14,6 @@ export type BlogpostListResponse = {
 
 export type BlogpostResponse = {
   results: Blogpost;
-  metadata: Metadata;
 };
 
 export type Metadata = {
