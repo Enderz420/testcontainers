@@ -1,7 +1,7 @@
 import { $fetch, setup } from "@nuxt/test-utils/e2e";
 import { fileURLToPath } from "node:url";
 import { describe, expectTypeOf, it } from "vitest";
-import { PostUser, User, UserResponse } from "../../shared/types/user";
+import { PostUser, User, UserResponse } from "../../../shared/types/user";
 
 await setup({
   rootDir: fileURLToPath(new URL("../../", import.meta.url)),

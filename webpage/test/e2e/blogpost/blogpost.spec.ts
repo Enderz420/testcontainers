@@ -6,7 +6,7 @@ import {
   BlogpostListResponse,
   BlogpostResponse,
   PostBlogpost,
-} from "../../shared/types/blogpost";
+} from "../../../shared/types/blogpost";
 
 await setup({
   rootDir: fileURLToPath(new URL("../../", import.meta.url)),
