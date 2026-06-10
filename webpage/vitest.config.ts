@@ -1,5 +1,6 @@
 import { defineVitestProject } from "@nuxt/test-utils/config";
 import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   test: {
@@ -22,10 +23,11 @@ export default defineConfig({
     ],
     projects: [
       {
+        plugins: [vue()],
         test: {
           name: "unit",
           include: ["test/unit/*.{test,spec}.ts"],
-          environment: "node",
+          environment: "happy-dom",
         },
       },
 
