@@ -1,3 +1,5 @@
+import vue from "@vitejs/plugin-vue";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -36,5 +38,8 @@ export default defineNuxtConfig({
       },
       include: ["/vitest.shims.d.ts"],
     },
+  },
+  vite: {
+    plugins: [vue()],
   },
 });
