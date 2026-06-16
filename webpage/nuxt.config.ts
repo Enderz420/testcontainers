@@ -8,6 +8,11 @@ export default defineNuxtConfig({
       url: "http://localhost:4000", // Default URL. Would typically be set by either an env file or the test suite
     },
   },
+  nitro: {
+    prerender: {
+      autoSubfolderIndex: false,
+    },
+  },
   hooks: {
     "pages:extend": (pages) => {
       const filteredPages = pages
