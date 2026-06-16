@@ -22,6 +22,11 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("POST /api/v1/blogpost", app.PostBlogpostHandler)
 	mux.HandleFunc("DELETE /api/v1/blogpost/{id}", app.DeleteBlogpostHandler)
 
+	mux.HandleFunc("GET /api/v1/group", app.ListGroupHandler)
+	mux.HandleFunc("GET /api/v1/group/{id}", app.GetGroupHandler)
+	mux.HandleFunc("POST /api/v1/group", app.PostGroupHandler)
+	mux.HandleFunc("DELETE /api/v1/group/{id}", app.DeleteGroupHandler)
+
 	handler := standard.Then(mux)
 	return handler
 }

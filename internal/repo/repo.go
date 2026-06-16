@@ -10,6 +10,7 @@ type Repo struct {
 	models   *data.Models
 	Blogpost BlogpostReaderWriter
 	User     UserReaderWriter
+	Group    GroupReaderWriter
 }
 
 func NewRepo(db *sql.DB, models *data.Models) *Repo {
@@ -17,5 +18,6 @@ func NewRepo(db *sql.DB, models *data.Models) *Repo {
 		models:   models,
 		Blogpost: NewBlogpostService(db, models),
 		User:     NewUserService(db, models),
+		Group:    NewGroupService(db, models),
 	}
 }

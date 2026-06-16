@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"enderz.net/testcontainer-test/internal/database"
 	"enderz.net/testcontainer-test/internal/logging"
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
@@ -29,7 +30,7 @@ type GroupModel struct {
 
 func (m *GroupModel) SelectOne(
 	ctx context.Context,
-	id string,
+	id uuid.UUID,
 ) (*Group, error) {
 
 	const stmt = `
@@ -100,4 +101,46 @@ func (m *GroupModel) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (m *GroupModel) SelectAll(ctx context.Context) ([]*Group, *database.Metadata, error) {
+	const stmt = `
+	SELECT id, name, created_at, last_modified
+	FROM core.groups
+	ORDER BY "id"
+	`
+
+	logger := logging.LoggerFromContext(ctx).With(
+		slog.Group("query", slog.String("statement", stmt)),
+	)
+
+	ctx, cancel := context.WithTimeout(ctx, *m.Timeout)
+	defer cancel()
+
+	var results []*Group
+
+	logger.LogAttrs(ctx, slog.LevelInfo, "performing query")
+
+	rows, err := m.DB.QueryContext(ctx, stmt)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var group Group
+		err = rows.Scan(&group.ID, &group.Name, &group.CreatedAt, &group.LastModified)
+
+		if err != nil {
+			return nil, nil, err
+		}
+		results = append(results, &group)
+	}
+	metadata := database.NewMetadata(results)
+	if metadata.Length > 0 {
+		metadata.LastSeen = uuid.UUID(results[metadata.Length-1].ID)
+	}
+	logger.Info("query successful", slog.Any("metadata", metadata))
+
+	return results, &metadata, nil
 }
