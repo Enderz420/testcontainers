@@ -18,9 +18,6 @@ func OpenDB(config Config) (*sql.DB, error) {
 	db.SetMaxOpenConns(config.MaxOpenConns)
 
 	duration, err := time.ParseDuration(config.MaxIdleTime)
-	if err != nil {
-		return nil, err
-	}
 
 	db.SetConnMaxIdleTime(duration)
 
@@ -28,9 +25,6 @@ func OpenDB(config Config) (*sql.DB, error) {
 	defer cancel()
 
 	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	return db, nil
 }
