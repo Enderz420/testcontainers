@@ -1,0 +1,44 @@
+name: "golang-lint"
+description: ""
+
+inputs:
+  version:
+    description: "version to install"
+    default: "v2.12.2"
+  working-directory:
+    default: "."
+  args:
+    description: "args`"
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install golangci-lint
+      shell: bash
+      run: |
+        curl -sSfL https://golangci-lint.run/install.sh \
+          | sh -s -- -b "$(go env GOPATH)/bin" ${{ inputs.version }}
+
+    - name: Run golangci-lint
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -o pipefail
+        results="$(mktemp)"
+
+        golangci-lint run ./internal/... --output.json.path=stdout ${{ inputs.args }} > "$results" || true
+
+        count=$(jq '.Issues | length' "$results")
+
+        jq -c '.Issues[]?' "$results" | while IFS= read -r issue; do
+          file=$(jq -r '.Pos.Filename'  <<<"$issue")
+          line=$(jq -r '.Pos.Line'      <<<"$issue")
+          col=$(jq -r '.Pos.Column'     <<<"$issue")
+          linter=$(jq -r '.FromLinter'  <<<"$issue")
+          text=$(jq -r '.Text' <<<"$issue" | tr '\n' ' ')
+          echo "::error file=${file},line=${line},col=${col},title=golangci-lint(${linter})::${text}"
+        done
+
+        echo "golangci-lint found ${count} issue(s)"
+        [ "$count" -eq 0 ]
