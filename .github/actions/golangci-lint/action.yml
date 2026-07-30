@@ -27,7 +27,7 @@ runs:
         set -o pipefail
         results="$(mktemp)"
 
-        golangci-lint run ./internal/... --output.json.path=stdout ${{ inputs.args }} > "$results" || true
+        golangci-lint run ${{ inputs.args }} --output.json.path="$results" || true
 
         count=$(jq '.Issues | length' "$results")
 
