@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment
 func OpenDB(config Config) (*sql.DB, error) {
 	fmt.Println("Using:", config.DSN)
 	db, err := sql.Open("sqlserver", config.DSN)
