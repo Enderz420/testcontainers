@@ -16,4 +16,4 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
-      - uses: ./.github/workflows/golangci-lint
+      - uses: ./.github/actions/golangci-lint
