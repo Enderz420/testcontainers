@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment this is a multiple line comment
 func OpenDB(config Config) (*sql.DB, error) {
 	fmt.Println("Using:", config.DSN)
 	db, err := sql.Open("sqlserver", config.DSN)
@@ -17,9 +18,6 @@ func OpenDB(config Config) (*sql.DB, error) {
 	db.SetMaxOpenConns(config.MaxOpenConns)
 
 	duration, err := time.ParseDuration(config.MaxIdleTime)
-	if err != nil {
-		return nil, err
-	}
 
 	db.SetConnMaxIdleTime(duration)
 
@@ -27,9 +25,6 @@ func OpenDB(config Config) (*sql.DB, error) {
 	defer cancel()
 
 	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	return db, nil
 }
