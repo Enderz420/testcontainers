@@ -16,4 +16,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
-      - uses: ./.github/actions/golangci-lint
+      - name: install binary
+        run: |
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.12.2
+
+          golangci-lint --version
+
+          golangci-lint run ./internal/...
+
